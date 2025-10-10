@@ -5,7 +5,7 @@ import {API_URL} from './tokens';
 export type Product = {id:number; name: string; price: number; category: string};
 
 @Injectable ({providedIn: 'root'})
- export class ProductSerice {
+ export class ProductService {
     private http=inject (HttpClient);
     private api= inject (API_URL);
 
