@@ -1,3 +1,5 @@
+//vsi deli aplikacije, ki rabijo podatke o izdelkih, jih bodo dobili iz enega mesta in to je tukaj. 
+
 import{Injectable, inject, signal, computed} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {API_URL} from './tokens';
