@@ -3,6 +3,7 @@
 import{Injectable, inject, signal, computed} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {API_URL} from './tokens';
+import { catchError, of  } from 'rxjs';
 
 export type Product = {id:number; name: string; price: number; category: string};
 
@@ -10,6 +11,7 @@ export type Product = {id:number; name: string; price: number; category: string}
  export class ProductService {
     private http=inject (HttpClient);
     private api= inject (API_URL);
+
 
     products=signal<Product []>([]);
     query = signal ('');
@@ -22,9 +24,22 @@ export type Product = {id:number; name: string; price: number; category: string}
         return [...base].sort((a,b)=>
            by === 'name' ? a.name.localeCompare(b.name) : a.price - b.price
         );
-    })
-    load(){
-        this.http.get<Product[]>(`${this.api}/products.json`).subscribe(this.products.set);
+    });
+    constructor() {
+        this.load();
     }
-  }
+
+    load() {
+        this.http.get <Product[]> (`${this.api}/products.json`)
+        .pipe(
+            catchError(err=> {
+                console.error('failed to load products.json', err);
+                return of <Product[]> ([]);
+            })
+        )
+            .subscribe(list=>this.products.set(list));
+        
+    }
+    }
+  
  

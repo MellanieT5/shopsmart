@@ -1,3 +1,5 @@
+//drži stanje košarice
+
 import {Injectable, computed, signal} from '@angular/core';
 import type { Product } from '../core/product.service'; //importaš type 
 

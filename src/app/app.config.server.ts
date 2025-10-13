@@ -2,10 +2,11 @@ import { mergeApplicationConfig, ApplicationConfig } from '@angular/core';
 import { provideServerRendering, withRoutes } from '@angular/ssr';
 import { appConfig } from './app.config';
 import { serverRoutes } from './app.routes.server';
+import{API_URL} from './core/tokens';
 
 const serverConfig: ApplicationConfig = {
   providers: [
-    provideServerRendering(withRoutes(serverRoutes))
+    {provide: API_URL, useValue: '/assets'}
   ]
 };
 
