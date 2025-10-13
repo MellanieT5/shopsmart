@@ -7,6 +7,7 @@ import { ProductService, Product } from "../core/product.service";
 import { CurrencyPipe } from "@angular/common"; 
 
 
+
 @Component({
     selector:'app-admin-page',
     standalone: true,
@@ -30,8 +31,10 @@ import { CurrencyPipe } from "@angular/common";
     </form>
     
     <ul>
-        <li *ngFor = "let p of svc.products()">
+        <li *ngFor = "let p of svc.products(); trackBy: trackById">
             {{p.id}} - {{p.name}} - {{p.price | currency:'EUR'}} - {{p.category}}
+            <button type="button" (click)="onDelete(p.id)">Delete </button>
+        
 
        
         </li>
@@ -47,23 +50,36 @@ export class AdminPageComponent {
         price: [0, [Validators.required, Validators.min(0)]],
         category: ['', Validators.required],
     });
+    
+    trackById = (_:number, p:Product) => p.id;
 
+    onDelete(id:number) {
+        const ok = this.svc.remove(id);
+    }
 
 add(){
     if (this.form.invalid) return;
 
-    const v=this.form.getRawValue();
-    const nextId =
-  (this.svc.products().reduce((m, p) => Math.max(m, p.id), 0) || 0) + 1;
+    const v=this.form.getRawValue(); //prebere trenutne vrednosti iz obrazca
 
-    const newProduct: Product = {
+    const name= v.name.trim(); //normalizira vnose(obreže presledke,pretvori ceno v številko)
+    const category= v.category.trim();
+    const price=Number(v.price);
+
+
+    const nextId =
+  (this.svc.products().reduce((m, p) => Math.max(m, p.id), 0) || 0) + 1; //vzame največji id v seznamu ter doda 1
+
+   
+  
+    const newProduct: Product = { //sestavi objekt novega izdelka
         id:nextId,
         name:v.name,
         price:Number(v.price),
         category: v.category,
     };
 
-    this.svc.products.update (list=> [...list, newProduct]);
-    this.form.reset({name: '', price: 0, category: ''});
+    this.svc.products.update(list=> [...list, newProduct]); //doda izdelek v stanje(signal)--> razširi tabelo, doda novi predmet not
+    this.form.reset({name: '', price: 0, category: ''});//resetira obrazec na zečetne vrednosti
 }
 }

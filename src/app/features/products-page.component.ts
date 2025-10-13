@@ -5,11 +5,12 @@ import { NgFor, NgIf, CurrencyPipe } from '@angular/common';// dodaš importe
 import { ProductService } from '../core/product.service';
 import { HighlightPipe } from "../shared/pipe/highlight.pipe";
 
+
 @Component({ //vstavimo komponento
     selector: 'app-products-page', //ime za HTML
     standalone: true, //lahko damo v module
     imports: [NgFor, NgIf, CurrencyPipe, HighlightPipe], // še več importov 
-    changeDetection: ChangeDetectionStrategy.OnPush, //naj preglda samo dejanske spremembe 
+    changeDetection: ChangeDetectionStrategy.OnPush, //naj pregleda samo dejanske spremembe 
     template: `
         <h2>Products</h2>
           
@@ -34,6 +35,7 @@ import { HighlightPipe } from "../shared/pipe/highlight.pipe";
             <li *ngFor="let p of svc.filtered()">
                 <span [innerHTML]= "p.name | highlight:svc.query()"> </span>
                 - {{p.price|currency: 'EUR'}}
+                <button type= "button" (click)="svc.remove(p.id)">Remove</button>
             </li>
         </ul>
 
@@ -42,9 +44,8 @@ import { HighlightPipe } from "../shared/pipe/highlight.pipe";
 })
 
 export class ProductsPageComponent {
-    constructor(public svc: ProductService) {
-        this.svc.load()
-    }
+    constructor(public svc: ProductService) {}
+    
 
     setQuery(v: string) { this.svc.query.set(v); }
     setSort(v: string) { this.svc.sortBy.set(v as 'name' | 'price'); }

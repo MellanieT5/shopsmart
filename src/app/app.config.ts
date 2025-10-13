@@ -14,6 +14,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch()),
-    {provide: API_URL, useValue: ''}
+    {provide: API_URL, useValue: '/assets'}
   ]
 };
