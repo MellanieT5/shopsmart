@@ -2,6 +2,17 @@
   <a routerLink="/products ">products</a>
   <a routerLink="/cart"> Cart</a>
   <a routerLink="/admin"> Admin</a>
+
+  <span style="margin-left:auto;"></span>
+
+  <button (click)="theme.cycle()" title="Toggle theme">
+    <ng-container [ngSwitch] ="theme.theme()">
+      <span *ngSwitchCase="'system'">🖥️ system </span>
+      <span *ngSwitchCase="'light'"> ☀️ light</span>
+      <span *ngSwitchCase="'dark'"> 🌚 dark</span>
+    </ng-container>
+    
+  </button>
 </nav>
 
 <router-outlet></router-outlet>

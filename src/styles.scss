@@ -1,0 +1,51 @@
+
+//light mode
+:root {
+    --bg:#ffffff;
+    --text:#111213;
+    --muted:#5c5f66
+     --card: #f6f7f9;
+  --border: #e3e5e8;
+  --link: #0a63ff;
+  --primary: #6c5ce7;
+}
+
+//dark mode
+:root.dark {
+ --bg:#0b0c10;
+ --text: #e9eaed;
+  --muted: #b0b3b8;
+  --card: #151821;
+  --border: #2a2e39;
+  --link: #7aa2ff;
+  --primary: #9b87f5;
+}
+
+@media (prefers-color-scheme:dark){
+    :root:not(.force-light):not(.force-dark){
+        color-scheme: dark;
+    }
+    :root:not(.force-light):not(.force-dark){
+    --bg: #0b0c10;
+    --text: #e9eaed;
+    --muted: #b0b3b8;
+    --card: #151821;
+    --border: #2a2e39;
+    --link: #7aa2ff;
+    --primary: #9b87f5;
+  }
+}
+
+html, body {
+    height:100%;
+    background:var(--bg);
+    color:var(--text);
+}
+
+a {color: var(--link);}
+input,select, button, textarea {
+    color: var(--text);
+    background: var (--card);
+    border:1px solid var(--border);
+}
+button {cursor: pointer;}
