@@ -2,13 +2,15 @@ import { Routes } from '@angular/router';
 import {ProductsPageComponent} from './features/products-page.component';
 import { CartPageComponent } from './features/cart-page.component';
 import { AdminPageComponent } from './features/admin-page.component';
+import {ProductDetailComponent} from './features/product-detail.comonent';
 
 export const routes: Routes = [
     {path: '', redirectTo:'products', pathMatch:'full'},
     {path: 'products', component: ProductsPageComponent},
+    {path: 'products/:id', component: ProductDetailComponent},
     {path: 'cart', component: CartPageComponent},
     {path: 'admin', component: AdminPageComponent},
-    {path: '**', redirectTo:'products'}
+    {path: '**', redirectTo:'products'},
 
 ];
 

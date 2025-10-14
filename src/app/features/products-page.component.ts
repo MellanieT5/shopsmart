@@ -4,15 +4,18 @@ import { ChangeDetectionStrategy, Component } from "@angular/core";
 import { NgFor, NgIf, CurrencyPipe } from '@angular/common';// dodaš importe 
 import { ProductService } from '../core/product.service';
 import { HighlightPipe } from "../shared/pipe/highlight.pipe";
+import{RouterLink} from '@angular/router';
 
 
 @Component({ //vstavimo komponento
     selector: 'app-products-page', //ime za HTML
     standalone: true, //lahko damo v module
-    imports: [NgFor, NgIf, CurrencyPipe, HighlightPipe], // še več importov 
+    imports: [NgFor, RouterLink,  NgIf, CurrencyPipe, HighlightPipe], // še več importov 
     changeDetection: ChangeDetectionStrategy.OnPush, //naj pregleda samo dejanske spremembe 
     template: `
         <h2>Products</h2>
+
+        
           
          <div style= "display: flex; gap:0.5rem; margin-bottom:1rem">
            <input
@@ -31,15 +34,18 @@ import { HighlightPipe } from "../shared/pipe/highlight.pipe";
             <button (click)="svc.load()">Reload </button>
         </div>
 
-        <ul *ngIf= "svc.filtered().length; else empty">
-            <li *ngFor="let p of svc.filtered()">
-                <span [innerHTML]= "p.name | highlight:svc.query()"> </span>
-                - {{p.price|currency: 'EUR'}}
-                <button type= "button" (click)="svc.remove(p.id)">Remove</button>
+        <ul *ngIf = "svc.filtered().length; else empty">
+            <li *ngFor = "let p of svc.filtered(); tackBy: trackById">
+                <a [routerLink] = "['/products', p.id]">
+                    <span [innerHTML]="p.name | highlight:svc.query()"> </span>
+                </a> 
+                -{{p.price | currency: 'EUR'}} - {{p.category}}
+                <button type= "button" (click)="svc.remove(p.id)">Remove </button>
             </li>
         </ul>
 
         <ng-template #empty><p>No products found. </p></ng-template>
+    
     `
 })
 
@@ -49,5 +55,5 @@ export class ProductsPageComponent {
 
     setQuery(v: string) { this.svc.query.set(v); }
     setSort(v: string) { this.svc.sortBy.set(v as 'name' | 'price'); }
-
+    trackById =(_:number, p: {id:number}) => p.id; 
 }

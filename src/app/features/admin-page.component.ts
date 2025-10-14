@@ -25,14 +25,23 @@ import {CATEGORIES, type Category} from '../core/categories';
     
     <form [formGroup] = "form" (ngSubmit) = "add()">
         <input formControlName="name" placeholder="Name" />
-        <input formControlName="price" type="number" step="0.01" placeholder="Price"/>
+        <input formControlName="price" type="number" inputmode="decimal" min="0" step="1" placeholder="Price"/>
 
         <select formControlName="category" required>
             <option value="" disabled>-choose category-</option>
             <option *ngFor="let c of categories" [value]="c"> {{c}} </option>
+            
       </select>
 
     <button type="submit" [disabled]="form.invalid"> Add product </button>
+    
+    <textarea
+        formControlName="description"
+        rows="3"
+        placeholder="Description (optional)"
+    ></textarea>
+
+
       </form>  
 
     <ul>
@@ -56,6 +65,7 @@ export class AdminPageComponent {
         name: ['', Validators.required],
         price: [0, [Validators.required, Validators.min(0)]],
         category: ['' as Category | '', Validators.required],
+        description: [''],
     });
     
     trackById = (_:number, p:Product) => p.id;
@@ -72,9 +82,11 @@ add(){
         name:v.name.trim(),
         category:v.category as Category,
         price:Number(v.price),
+        description:v.description.trim() || undefined,
     });
 
-    this.form.reset({name:'', price: 0, category: ''});
+
+    this.form.reset({name:'', price: 0, category: '', description: ''});
 }
 }
 

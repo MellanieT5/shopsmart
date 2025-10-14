@@ -7,7 +7,7 @@ import { catchError, of } from 'rxjs';
 import type {Category} from './categories';
 
 
-export type Product = { id: number; name: string; price: number; category: Category };
+export type Product = { id: number; name: string; price: number; category: Category; description?:string };
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
