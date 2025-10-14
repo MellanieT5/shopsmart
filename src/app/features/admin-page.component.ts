@@ -54,32 +54,20 @@ export class AdminPageComponent {
     trackById = (_:number, p:Product) => p.id;
 
     onDelete(id:number) {
-        const ok = this.svc.remove(id);
+        this.svc.remove(id);
     }
 
 add(){
-    if (this.form.invalid) return;
+    if(this.form.invalid) return;
 
-    const v=this.form.getRawValue(); //prebere trenutne vrednosti iz obrazca
-
-    const name= v.name.trim(); //normalizira vnose(obreže presledke,pretvori ceno v številko)
-    const category= v.category.trim();
-    const price=Number(v.price);
-
-
-    const nextId =
-  (this.svc.products().reduce((m, p) => Math.max(m, p.id), 0) || 0) + 1; //vzame največji id v seznamu ter doda 1
-
-   
-  
-    const newProduct: Product = { //sestavi objekt novega izdelka
-        id:nextId,
-        name:v.name,
+    const v=this.form.getRawValue();
+    this.svc.add({
+        name:v.name.trim(),
+        category:v.category.trim(),
         price:Number(v.price),
-        category: v.category,
-    };
+    });
 
-    this.svc.products.update(list=> [...list, newProduct]); //doda izdelek v stanje(signal)--> razširi tabelo, doda novi predmet not
-    this.form.reset({name: '', price: 0, category: ''});//resetira obrazec na zečetne vrednosti
+    this.form.reset({name:'', price: 0, category: ''});
 }
 }
+

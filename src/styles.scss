@@ -1,51 +1,105 @@
-
-//light mode
+/* === Light theme (default) === */
 :root {
-    --bg:#ffffff;
-    --text:#111213;
-    --muted:#5c5f66
-     --card: #f6f7f9;
-  --border: #e3e5e8;
-  --link: #0a63ff;
-  --primary: #6c5ce7;
+  --bg:        #f7f7f8;
+  --text:      #111318;
+  --muted:     #6b7280;
+  --card:      #ffffff;
+  --border:    #e5e7eb;
+
+  --primary:           #3b82f6; /* modra */
+  --primary-contrast:  #ffffff;
+
+  --btn-bg:        var(--primary);
+  --btn-text:      var(--primary-contrast);
+  --btn-border:    transparent;
+
+  --btn-sec-bg:    #f3f4f6;
+  --btn-sec-text:  #111318;
+  --btn-sec-border:#e5e7eb;
+
+  --input-bg:      #ffffff;
+  --input-text:    #111318;
+  --input-border:  #d1d5db;
+
+  --focus:         #60a5fa;
 }
 
-//dark mode
-:root.dark {
- --bg:#0b0c10;
- --text: #e9eaed;
-  --muted: #b0b3b8;
-  --card: #151821;
-  --border: #2a2e39;
-  --link: #7aa2ff;
-  --primary: #9b87f5;
+/* === Dark theme overrides (ThemeService dodaja .dark na <html>) === */
+.dark {
+  --bg:        #0b0d12;
+  --text:      #e7e9ee;
+  --muted:     #9aa0a6;
+  --card:      #11151b;
+  --border:    #303642;
+
+  --primary:           #60a5fa;     /* malo svetlejša modra za dark */
+  --primary-contrast:  #0b0d12;
+
+  --btn-bg:        var(--primary);
+  --btn-text:      #0b0d12;         /* zelo berljivo na svetli modri */
+  --btn-border:    transparent;
+
+  --btn-sec-bg:    #1a202a;
+  --btn-sec-text:  #e7e9ee;
+  --btn-sec-border:#303642;
+
+  --input-bg:      #0f141b;
+  --input-text:    #e7e9ee;
+  --input-border:  #2b3340;
+
+  --focus:         #93c5fd;
 }
 
-@media (prefers-color-scheme:dark){
-    :root:not(.force-light):not(.force-dark){
-        color-scheme: dark;
-    }
-    :root:not(.force-light):not(.force-dark){
-    --bg: #0b0c10;
-    --text: #e9eaed;
-    --muted: #b0b3b8;
-    --card: #151821;
-    --border: #2a2e39;
-    --link: #7aa2ff;
-    --primary: #9b87f5;
-  }
-}
-
+/* ====== Global reseti/komponente ====== */
 html, body {
-    height:100%;
-    background:var(--bg);
-    color:var(--text);
+  background: var(--bg);
+  color: var(--text);
 }
 
-a {color: var(--link);}
-input,select, button, textarea {
-    color: var(--text);
-    background: var (--card);
-    border:1px solid var(--border);
+button, .btn {
+  appearance: none;
+  border-radius: .6rem;
+  border: 1px solid var(--btn-border);
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  padding: .45rem .8rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: filter .15s ease, background-color .15s ease, color .15s ease, border-color .15s ease;
 }
-button {cursor: pointer;}
+button:hover, .btn:hover { filter: brightness(1.05); }
+button:disabled, .btn:disabled { opacity: .55; cursor: not-allowed; }
+
+/* sekundarni/nevtralni gumb */
+.btn-secondary {
+  background: var(--btn-sec-bg);
+  color: var(--btn-sec-text);
+  border-color: var(--btn-sec-border);
+}
+
+/* “ghost”/tekstovni gumb */
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border-color: transparent;
+}
+.btn-ghost:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+
+/* inputi */
+input, select, textarea {
+  background: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid var(--input-border);
+  border-radius: .5rem;
+  padding: .45rem .6rem;
+  outline: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 35%, transparent);
+}
+
+/* opcijsko: stil za tvoj toggle */
+.theme-btn { @extend .btn-ghost; padding: .35rem .6rem; border-radius: .6rem; }
