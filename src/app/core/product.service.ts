@@ -4,8 +4,10 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { API_URL } from './tokens';
 import { catchError, of } from 'rxjs';
+import type {Category} from './categories';
 
-export type Product = { id: number; name: string; price: number; category: string };
+
+export type Product = { id: number; name: string; price: number; category: Category };
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {

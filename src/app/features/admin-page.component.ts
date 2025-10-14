@@ -5,7 +5,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms";
 import {NgFor} from '@angular/common';
 import { ProductService, Product } from "../core/product.service";
 import { CurrencyPipe } from "@angular/common"; 
-
+import {CATEGORIES, type Category} from '../core/categories';
 
 
 @Component({
@@ -20,16 +20,21 @@ import { CurrencyPipe } from "@angular/common";
       ul {margin-top:1rem;}
       `],
     
-    template: `
+    template: ` 
     <h2>Admin</h2>
     
-    <form [formGroup]= "form" (ngSubmit)= "add()">
-      <input formControlName ="name" placeholder="Name" />
-      <input formControlName ="price" type= "number" step= "0.01" placeholder= "Price"/>
-      <input formControlName = "category" placeholder ="Category" />
-      <button type= "submit" [disabled]= "form.invalid"> Add product </button>
-    </form>
-    
+    <form [formGroup] = "form" (ngSubmit) = "add()">
+        <input formControlName="name" placeholder="Name" />
+        <input formControlName="price" type="number" step="0.01" placeholder="Price"/>
+
+        <select formControlName="category" required>
+            <option value="" disabled>-choose category-</option>
+            <option *ngFor="let c of categories" [value]="c"> {{c}} </option>
+      </select>
+
+    <button type="submit" [disabled]="form.invalid"> Add product </button>
+      </form>  
+
     <ul>
         <li *ngFor = "let p of svc.products(); trackBy: trackById">
             {{p.id}} - {{p.name}} - {{p.price | currency:'EUR'}} - {{p.category}}
@@ -45,10 +50,12 @@ export class AdminPageComponent {
     svc= inject (ProductService);
     fb= inject(FormBuilder);
 
+    categories=CATEGORIES;
+
     form = this.fb.nonNullable.group ({
         name: ['', Validators.required],
         price: [0, [Validators.required, Validators.min(0)]],
-        category: ['', Validators.required],
+        category: ['' as Category | '', Validators.required],
     });
     
     trackById = (_:number, p:Product) => p.id;
@@ -63,7 +70,7 @@ add(){
     const v=this.form.getRawValue();
     this.svc.add({
         name:v.name.trim(),
-        category:v.category.trim(),
+        category:v.category as Category,
         price:Number(v.price),
     });
 
