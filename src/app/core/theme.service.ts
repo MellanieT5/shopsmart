@@ -1,57 +1,66 @@
-import {Injectable, effect, signal, inject, PLATFORM_ID, computed} from "@angular/core"; //importaš
-import {isPlatformBrowser} from '@angular/common';
+import { Injectable, effect, signal, inject, PLATFORM_ID, computed } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
-type Theme= 'light' | 'dark' | 'system'; //narediš union
+type Theme = 'light' | 'dark' | 'system';
 
-@Injectable({ providedIn: 'root'}) //je dostopen vsepovsod
+@Injectable({ providedIn: 'root' })
 export class ThemeService {
-    private platformId= inject(PLATFORM_ID);
-    private isBrowser = isPlatformBrowser(this.platformId);
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser = isPlatformBrowser(this.platformId);
 
-    theme= signal<Theme>('system');  //začetna vrednost je system--> kako ima uporabnik nastavljeno 
+  // privzeto "system" (prvi obisk)
+  theme = signal<Theme>('system');
 
-    effective=computed<'light' | 'dark'>(()=> {  //če effect dark--> dark, light-->light
-        const t= this.theme();
-        if (t === 'dark') return 'dark'; 
-        if (t === 'light') return 'light';
-        
-        if (this.isBrowser && window.matchMedia?.('(prefers-color-scheme:dark)').matches) { //če je pa theme system, pa bo dalo dark ali light
-            return 'dark';
-        }
-        return 'light';
+  // efektivna (upošteva OS, če je system)
+  effective = computed<'light' | 'dark'>(() => {
+    const t = this.theme();
+    if (t === 'dark') return 'dark';
+    if (t === 'light') return 'light';
+    if (this.isBrowser && window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark';
+    return 'light';
+  });
+
+  constructor() {
+    if (this.isBrowser) {
+      const saved = localStorage.getItem('theme') as Theme | null;
+      if (saved) this.theme.set(saved);
+    }
+
+    effect(() => {
+      const t = this.theme();
+      const eff = this.effective();
+      if (!this.isBrowser) return;
+
+      const root = document.documentElement;
+      root.classList.toggle('dark', eff === 'dark');
+
+      // pomagamo CSS-u vedeti ali je force ali system
+      root.classList.toggle('force-dark', t === 'dark');
+      root.classList.toggle('force-light', t === 'light');
+
+      localStorage.setItem('theme', t);
     });
 
-    constructor(){
-        if (this.isBrowser){ //preveri, da smo na browserju in ne na strežniku
-            const saved= localStorage.getItem('theme') as Theme | null; //če je brskalnik, pogleda v localStorage ali je uporabnik že prej izbral temo
-            if (saved) this.theme.set(saved); //če najde jo nastavi
-        }
-
-    effect(()=>{
-        const eff=this.effective(); //se izvede vsakič, ko se this.effect/this.theme spremeni
-        if(this.isBrowser){
-            const root=document.documentElement; //manipulirap HTML element, če je dark, doda v html-->force dark, za light isto
-
-            root.classList.toggle('force-dark', this.theme() === 'dark');
-            root.classList.toggle('force-light', this.theme()=== 'light');
-
-            localStorage.setItem('theme', this.theme());//shraniš, da se naslednič spet uporabi ista izbira
-        }
-    });
-    if (this.isBrowser && window.matchMedia){ //preveri, če brskalnik podpira matchMedia
-        const mq = window.matchMedia ('(prefers-color-scheme:dark)'); //usvari media query listener--> za spremembo sistemske teme
-        mq.addEventListener?.('change', ()=> {
-            if (this.theme()=== 'system') { //če je izbran sistem, sproži reakcijo, da se updejta tema
-                this.theme.update(v=>v);
-            }
-        });
+    // poslušaj spremembo OS teme, ko je izbrano "system"
+    if (this.isBrowser && window.matchMedia) {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      mq.addEventListener?.('change', () => {
+        if (this.theme() === 'system') this.theme.update(x => x); // recompute
+      });
     }
-    }
+  }
 
-    set(t:Theme) {this.theme.set(t);} 
-    cycle() {
-        const order:Theme[] = ['system', 'light','dark']; //vrstni red tem
-        const i=order.indexOf(this.theme()); //i poišče trnutno temo
-        this.set(order[(i+1)% order.length]); //doda 1, vzame ostanek z dolžino tabele-->krog, nastavi novo temo
-    }
+  set(t: Theme) { this.theme.set(t); }
+
+  /** Preklopi med dark/light.
+   *  Če si na "system", vzame trenutno efektivno (dark|light) in preklopi na nasprotno
+   *  ter s tem nastavi trajno izbiro.
+   */
+  toggle() {
+    const eff = this.effective();
+    this.theme.set(eff === 'dark' ? 'light' : 'dark');
+  }
+
+  /** (Neobvezno) gumb za povrnitev na system */
+  useSystem() { this.theme.set('system'); }
 }

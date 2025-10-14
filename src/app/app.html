@@ -5,14 +5,14 @@
 
   <span style="margin-left:auto;"></span>
 
-  <button (click)="theme.cycle()" title="Toggle theme">
-    <ng-container [ngSwitch] ="theme.theme()">
-      <span *ngSwitchCase="'system'">🖥️ system </span>
-      <span *ngSwitchCase="'light'"> ☀️ light</span>
-      <span *ngSwitchCase="'dark'"> 🌚 dark</span>
-    </ng-container>
+  <button (click)="theme.toggle()"
+  class="theme-btn"
+  [attr.aria-label]="theme.effective() === 'dark' ? 'switch to light mode' : 'switch to dark mode'">
+  <span *ngIf = "theme.effective() === 'dark'"> ☀️ </span>
+  <span *ngIf="theme.effective() === 'light'"> 🌚</span>
+</button>
+
     
-  </button>
 </nav>
 
 <router-outlet></router-outlet>
