@@ -1,12 +1,12 @@
 //prikazuje izdelke
 
-import { ChangeDetectionStrategy, Component } from "@angular/core";
-import { NgFor, NgIf, CurrencyPipe } from '@angular/common';// dodaš importe 
-import { ProductService } from '../core/product.service';
-import { HighlightPipe } from "../shared/pipe/highlight.pipe";
-import{RouterLink} from '@angular/router';
-import { CartService } from "../core/cart.service";
-import { inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component } from "@angular/core"; 
+import { NgFor, NgIf, CurrencyPipe } from '@angular/common';//NgIf, NgFor sta direktivi za if/for v templatu, CurrencyPipe lepo formatira št. kot EUR
+import { ProductService } from '../core/product.service';//je vir podatkov (signali: products/query/filtered)
+import { HighlightPipe } from "../shared/pipe/highlight.pipe";//poudari  ujemanje iskanje v imenu 
+import{RouterLink} from '@angular/router'; //za linke na /products/:id
+import { CartService } from "../core/cart.service";//za add to cart in favorites
+import { inject } from "@angular/core"; //za DI brez konstruktorja
 
 
 @Component({ //vstavimo komponento
@@ -22,7 +22,7 @@ import { inject } from "@angular/core";
            #q
             placeholder="Search..."
             [value]="svc.query()"
-            (input)="setQuery(q.value||'')"/>
+            (input)="setQuery(q.value||'')"/> 
                         
         <select
             [value]="svc.sortBy()"
@@ -32,13 +32,17 @@ import { inject } from "@angular/core";
         </select>
             
             <button (click)="svc.load()">Reload </button>
-        </div>
+        </div> <!--prebere trenutne vrednosti iz signala svc.query(), on input kličemo setQuery, ki nastavi signal ||'' poskrbim da nikoli ne nastavi null/undefined-->
+        <!--value veže na svc.sortBy(), change prebere vrednost iz DOM targeta $any je TS hack, da ne benti nad tipom targeta.-->
+        <!-- reload ponovno naloži podatke (najprej iz localStorage, sicer iz /products.json - logika v servisu) -->
 
-        <ul *ngIf = "svc.filtered().length; else empty">
-            <li *ngFor = "let p of svc.filtered(); tackBy: trackById" style="display:flex; gap:.5rem;">
+
+        
+        <ul *ngIf = "svc.filtered().length; else empty"><!--prikazuje seznam samo, če filtrirani produkti niso prazni. (filtrira->query, sortira->sortBy) -->
+            <li *ngFor = "let p of svc.filtered(); trackBy: trackById" style="display:flex; gap:.5rem;"> <!--ponovi element za vsak produkt-->
                 
-                <a [routerLink] = "['/products', p.id]">
-                    <span [innerHTML]="p.name | highlight:svc.query()"> </span>
+                <a [routerLink] = "['/products', p.id]"> <!--vodi na productDetailComponent za ta id-->
+                    <span [innerHTML]="p.name | highlight:svc.query()"> </span> <!--highlight pipe vrne HTML z označenim ujemanjem, zato uporabiš innerHTML-->
                 </a> 
                 -{{p.price | currency: 'EUR'}} - {{p.category}}
 
@@ -47,10 +51,12 @@ import { inject } from "@angular/core";
                 <button type ="button" (click)="cart.add(p.id,1)">Add to cart </button>
 
                  <button type="button"
-                [attr.aria-pressed]="cart.isFav(p.id)"
+                [attr.aria-pressed]="cart.isFav(p.id)" 
                 (click)="cart.toggleFav(p.id)"
                 class="heart"
-                [class.active]="cart.isFav(p.id)">
+                [class.active]="cart.isFav(p.id)"><!--attr... izboljša dostopnost(toggle button)
+                class active  doda CSS, ko je v favs
+                click=cart.... doda/odstrani in najljubših-->
           ♥
         </button>
 
@@ -60,7 +66,7 @@ import { inject } from "@angular/core";
         <ng-template #empty><p>No products found. </p></ng-template>
     
     `,
-    styles:[`
+    styles:[`//osnovni videz srčka
     .heart {
       border: 1px solid var(--border, #444);
       background: transparent;
@@ -69,8 +75,8 @@ import { inject } from "@angular/core";
       border-radius: .5rem;
       opacity:.8;
     }
-    .heart.active { background: #ff2b77; color: white; opacity:1; }
-  `]
+    .heart.active { background: #ff2b77; color: white; opacity:1; } 
+  `] 
 })
 
 export class ProductsPageComponent {
@@ -79,7 +85,7 @@ export class ProductsPageComponent {
     cart=inject(CartService);
     
 
-    setQuery(v: string) { this.svc.query.set(v); }
+    setQuery(v: string) { this.svc.query.set(v); } //setQuery, setSort sta kratki helperj, ki nastavljata signals v ProductService
     setSort(v: string) { this.svc.sortBy.set(v as 'name' | 'price'); }
-    trackById =(_:number, p: {id:number}) => p.id; 
+    trackById =(_:number, p: {id:number}) => p.id; //poskrbi, da angular sledi elementom po id (bolj učinkovito renderiranje)
 }

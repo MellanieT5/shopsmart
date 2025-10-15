@@ -1,3 +1,5 @@
+//kategorije
+
 const GENERAL_CATEGORIES =[ //prva kategorija (bom še vidla, če jo bom dejansko uporablja, sam bi blo kul, če bi )
     'Home & Kitchen',
     'Beauty',

@@ -61,6 +61,6 @@ export class ThemeService {
     this.theme.set(eff === 'dark' ? 'light' : 'dark');
   }
 
-  /** (Neobvezno) gumb za povrnitev na system */
+  // gumb za povrnitev na system */
   useSystem() { this.theme.set('system'); }
 }

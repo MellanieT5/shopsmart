@@ -11,10 +11,10 @@ import { CartService } from '../core/cart.service';
   template: `
     <h2>Cart</h2>
 
-    <div *ngIf="cart.lines().length; else empty">
+    <div *ngIf="cart.lines().length; else empty"> <!--če ima košarica lines, pokaže seznam, drugače prikaže #empty-->
       <ul>
-        <li *ngFor="let line of cart.lines(); trackBy: trackById"
-            style="display:flex; gap:.5rem; align-items:center;">
+        <li *ngFor="let line of cart.lines(); trackBy: trackById" 
+            style="display:flex; gap:.5rem; align-items:center;"><!--ngfore čez joinane vrstice iz servisa lines, vrne {product,qty,lineTotal}-->
           <strong>{{ line.product.name }}</strong>
           — {{ line.product.price | currency:'EUR' }} × {{ line.qty }}
           <span style="margin-left:auto">
@@ -27,7 +27,7 @@ import { CartService } from '../core/cart.service';
         </li>
       </ul>
 
-      <p><strong>Total: {{ cart.total() | currency:'EUR' }}</strong></p>
+      <p><strong>Total: {{ cart.total() | currency:'EUR' }}</strong></p> <!--skupni seštevek-->
       <button (click)="cart.clear()">Clean cart</button>
     </div>
 
@@ -37,7 +37,8 @@ import { CartService } from '../core/cart.service';
   `
 })
 export class CartPageComponent {
-  cart = inject(CartService);
+  cart = inject(CartService);//vbrizgnemo CartService in ga izpostavimo templatu
 
-  trackById = (_: number, line: { product: { id: number } }) => line.product.id;
+  trackById = (_: number, line: { product: { id: number } }) => line.product.id; //funkcija trackBy: Angular sledi elementom po product.id, manj nepotrebnih renderjev.
 }
+

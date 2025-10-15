@@ -24,20 +24,20 @@ import {ProductService} from '../core/product.service';
         `],
 
     template: `
-   <div class="wrap" *ngIf="prod(); else notFound">
+   <div class="wrap" *ngIf="prod(); else notFound"> <!--prikaže detajle, samo če ni null-->
   <a class="back" routerLink="/products">← Back to products</a>
 
   <div class="row">
     <div class="img"><!-- sliko bom dala kasneje --></div>
 
     <div>
-      <h1>{{ prod()!.name }}</h1>
+      <h1>{{ prod()!.name }}</h1> <!--poveš, da v tem bloku ni null, da gre skozi currency pipe-->
 
       <div class="meta">
         {{ prod()!.category }} • {{ prod()!.price | currency:'EUR' }}
       </div>
 
-      <p class="desc" *ngIf="prod()!.description as d">{{ d }}</p>
+      <p class="desc" *ngIf="prod()!.description as d">{{ d }}</p> <!--pokaže le opis, če obstaja, z as d, ga poimenuješ in uporabiš-->
     </div>
   </div>
 </div>
@@ -53,15 +53,16 @@ import {ProductService} from '../core/product.service';
 })
 
 export class ProductDetailComponent {
-    private route=inject(ActivatedRoute);
+    private route=inject(ActivatedRoute); //vbrizgaš trenutno aktivno ruto in service produktov
     private svc = inject (ProductService);
 
     private paramMap = toSignal (this.route.paramMap, {initialValue:this.route.snapshot.paramMap})
+  //route.paraMap je observable, toSignal ga spremeni v signal, da ga lahko bereš kot funkcijo paramMap
 
-    prod= computed (()=>{
+    prod= computed (()=>{ //izpeljan signal: odvisen je od paramMap in od svc.products
         const id =Number (this.paramMap().get('id'));
-        if (Number.isNaN (id)) return null;
-        return this.svc.products().find(p=>p.id === id) ?? null;
+        if (Number.isNaN (id)) return null; //najprej parsiraš id iz rute, če ni št. null
+        return this.svc.products().find(p=>p.id === id) ?? null;//poiščeš produkt po id, če ga ni vrneš null
     });
 }
 
