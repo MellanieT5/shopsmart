@@ -22,16 +22,39 @@ export class ProductService {
   query = signal('');
   sortBy = signal<'name' | 'price'>('name');
 
+  private norm (s:string){
+    return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+  }
+  
+  private wordsOf(s: string) {
+  return this.norm(s)
+    .split(/[^a-z0-9]+/i)
+    .filter(Boolean);
+}
+
+
   filtered = computed(() => {
-    const q = this.query().toLowerCase();
-    const base = this.products().filter(p => p.name.toLowerCase().includes(q));
-    const by = this.sortBy();
-    return [...base].sort((a, b) => (by === 'name' ? a.name.localeCompare(b.name) : a.price - b.price));
+  const q = this.norm(this.query().trim());
+  const by = this.sortBy();
+
+  const base = this.products().filter(p => {
+    if (!q) return true;
+    // match na ZAČETKU katerekoli besede v imenu
+    return this.wordsOf(p.name).some(w => w.startsWith(q));
   });
+
+  return [...base].sort((a, b) =>
+    by === 'name' ? a.name.localeCompare(b.name) : a.price - b.price
+  );
+});
 
   constructor() {
     if (this.isBrowser) this.load();
   }
+
 
   load() {
     if (this.isBrowser) {
