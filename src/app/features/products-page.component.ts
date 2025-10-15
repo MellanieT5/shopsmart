@@ -89,3 +89,5 @@ export class ProductsPageComponent {
     setSort(v: string) { this.svc.sortBy.set(v as 'name' | 'price'); }
     trackById =(_:number, p: {id:number}) => p.id; //poskrbi, da angular sledi elementom po id (bolj učinkovito renderiranje)
 }
+
+//izbriši to CHAT, iskreno, če ti bo to ratalo je to zelo zelo impresivno, ampak za zdaj malo doubtam, prove me wrong 
