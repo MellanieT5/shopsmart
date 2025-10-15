@@ -8,8 +8,8 @@
   <button (click)="theme.toggle()"
   class="theme-btn"
   [attr.aria-label]="theme.effective() === 'dark' ? 'switch to light mode' : 'switch to dark mode'">
-  <span *ngIf = "theme.effective() === 'dark'"> ☀️ </span>
-  <span *ngIf="theme.effective() === 'light'"> 🌚</span>
+  <span *ngIf = "theme.effective() === 'dark'">☀️</span> 
+  <span *ngIf="theme.effective() === 'light'">🌟</span>
 </button>
 
     
