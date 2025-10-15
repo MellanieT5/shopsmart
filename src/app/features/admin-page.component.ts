@@ -32,15 +32,16 @@ import {CATEGORIES, type Category} from '../core/categories';
             <option *ngFor="let c of categories" [value]="c"> {{c}} </option>
             
       </select>
-
-    <button type="submit" [disabled]="form.invalid"> Add product </button>
-    
+       
     <textarea
         formControlName="description"
         rows="3"
         placeholder="Description (optional)"
     ></textarea>
 
+
+    <button type="submit" [disabled]="form.invalid"> Add product </button>
+   
 
       </form>  
 

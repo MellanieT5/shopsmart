@@ -5,7 +5,11 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import {provideHttpClient, withFetch} from '@angular/common/http';
 import {API_URL} from './core/tokens';
 
+import {LOCALE_ID} from '@angular/core';
+import{registerLocaleData} from '@angular/common';
+import localeSl from '@angular/common/locales/sl';
 
+registerLocaleData(localeSl);
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -14,6 +18,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch()),
-    {provide: API_URL, useValue: '/assets'}
+    {provide: API_URL, useValue: '/assets'},
+    {provide: LOCALE_ID, useValue: 'sl'},
   ]
 };
