@@ -21,6 +21,19 @@ export class CartService {
   items = signal<CartItem[]>([]); //hrani vrstico košarice (ID izdelka+količina)
   favorites = signal<number[]>([]); //hrani favorites (ID favorites)
 
+
+  lines= computed(()=>{
+    const map= new Map(this.products.products(). map(p=> [p.id, p]));
+    return this.items().map(it=> {
+        const product = map.get(it.productId);
+        return product
+        ? {product, qty:it.qty, lineTotal: product.price * it.qty}
+        :null;
+    }).filter((x): x is NonNullable<typeof x> => !!x);
+    });
+
+
+
   constructor() { //ob zagonu preberemo prejšnje stanje in ga nastavimo v signale, po reloadu se ohrani
     if (!this.isBrowser) return;
     try {
