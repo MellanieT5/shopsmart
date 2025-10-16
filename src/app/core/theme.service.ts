@@ -1,5 +1,6 @@
 import { Injectable, effect, signal, inject, PLATFORM_ID, computed } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { CartService } from './cart.service';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -7,6 +8,7 @@ type Theme = 'light' | 'dark' | 'system';
 export class ThemeService {
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
+  cart=inject(CartService);
 
   // privzeto "system" (prvi obisk)
   theme = signal<Theme>('system');

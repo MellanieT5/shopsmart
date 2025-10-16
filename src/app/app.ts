@@ -1,19 +1,29 @@
 import { Component, signal, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
+import { RouterOutlet, RouterLink } from '@angular/router';
 import {ThemeService} from './core/theme.service';
-import { NgSwitchCase, NgSwitch, NgSwitchDefault, NgIf } from "@angular/common"
+import { NgIf } from "@angular/common"
+import{FavoritesPanelComponent} from './features/favorites-panel.component';
+import{CartService} from './core/cart.service'
+
 
 
 
 @Component({
   selector: 'app-root',
   standalone:true,
-  imports:[RouterOutlet, RouterLink, NgIf],
+  imports:[RouterOutlet, RouterLink, NgIf, FavoritesPanelComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 
 })
+
 export class App {
   protected readonly title = signal('shopsmart');
   theme=inject(ThemeService);
+  cart=inject(CartService);
+  showFavs=signal(false);
+
+  toggleFavs(){
+    this.showFavs.update(open=> !open);
+  }
 }

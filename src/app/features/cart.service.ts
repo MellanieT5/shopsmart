@@ -8,7 +8,7 @@ export type CartItem = {product: Product; qty: number}; //product--> dejanski iz
 @Injectable ({providedIn: 'root'}) //dostopen povsod
 export class CartService { 
     items=signal<CartItem []>([]);//item shrani podatke (type CartIte), ki se bodo updajtali, ko se spremenijo, zaradi signala
-
+    favorites= signal<Product[]>([]);
 
     total = computed (()=> //ko se items spremeni, izračuna
       this.items().reduce((sum,it)=> sum + it.product.price * it. qty, 0)  
@@ -19,6 +19,9 @@ export class CartService {
 //sum-->tekoča vsota. it-->trenutni element v polju
 //sum+it... sešteje cene vseh izdelkov
 //0--> začetna vrednost vsote
+
+   favoriteLines = computed(() => this.favorites());
+
 
 
     add(p: Product, qty= 1){ //p:tipa produktov, qty: ima prevzeto vrednost 1, če je ne podaš
@@ -75,6 +78,18 @@ export class CartService {
 
     clear(){
         this.items.set([]);
+    }
+
+    toggleFav(p:Product){
+      this.favorites.update(list=>
+        list.some(x=>x.id === p.id)
+         ? list.filter(x=>x.id !==p.id)
+         : [...list,p]
+      );
+    }
+
+    isFav(productId:number){
+      return this.favorites().some(p=> p.id === productId);
     }
     //.set()-->metoda signala, ki mu nastaviš novo vrednost
     //[]--> prazno polje (košarica prazna)

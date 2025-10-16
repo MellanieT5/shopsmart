@@ -3,6 +3,7 @@
 import { Injectable, computed, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common'; 
 import { ProductService } from './product.service';
+import {Product} from './product.service';
 
 
 export type CartItem = { productId: number; qty: number };  
@@ -32,6 +33,12 @@ export class CartService {
     }).filter((x): x is NonNullable<typeof x> => !!x);
     });
 
+    favoriteLines = computed (()=> {
+      const map = new Map (this.products.products().map(p=>[p.id, p]));
+      return this.favorites()
+       .map(id=> map.get(id))
+       .filter((p): p is Product=> !!p);
+    });
 
 
   constructor() { //ob zagonu preberemo prejšnje stanje in ga nastavimo v signale, po reloadu se ohrani
