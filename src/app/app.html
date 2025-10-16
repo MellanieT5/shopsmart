@@ -21,7 +21,13 @@
 
 </nav>
 
-<app-favorites-panel [open]= "showFavs()"></app-favorites-panel>
+<app-favorites-panel 
+[open]= "showFavs()"
+(close)="showFavs.set(false)"
+></app-favorites-panel>
+
+
+
 
 <router-outlet></router-outlet>
 

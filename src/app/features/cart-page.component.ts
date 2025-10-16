@@ -16,7 +16,7 @@ import { CartService } from '../core/cart.service';
         <li *ngFor="let line of cart.lines(); trackBy: trackById" 
             style="display:flex; gap:.5rem; align-items:center;"><!--ngfore čez joinane vrstice iz servisa lines, vrne {product,qty,lineTotal}-->
           <strong>{{ line.product.name }}</strong>
-          — {{ line.product.price | currency:'EUR' }} × {{ line.qty }}
+          — {{ line.product.price | currency:'EUR' }} x {{ line.qty }}
           <span style="margin-left:auto">
             = <strong>{{ line.lineTotal | currency:'EUR' }}</strong>
           </span>

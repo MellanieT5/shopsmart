@@ -7,3 +7,15 @@
     font-size: .95rem;
 }
 .theme-btn:hover {filter: brightness(1.05);}
+
+.close{
+    color:black;
+    background: none;
+    border:none;
+    font-size:1.5rem;
+    cursor:pointer;
+}
+
+.close:hover{
+    color:rgb(105, 0, 0);
+}

@@ -16,27 +16,37 @@ import { CartService } from '../core/cart.service';
         <a routerLink="/admin"> Admin </a>
         <span style="margin-left:auto;"> </span>
 
-        <button (click)="theme.toggle()">
-            {{theme.effective()=== 'dark' ? '🌟': '☀️'}}
-        </button>
-    
+        <div class="fav-wrap">
         <button (click)="toggleFavs()"
            [class.active]="cart.favorites().length> 0">
         ♥
         </button>
+            <app-favorites-panel
+            [open]="showFavs()" 
+            (close)="showFavs.set(false)">
+            </app-favorites-panel>
+
+
+
+             <span class="spacer"></span>
+
+
+         <button (click)="theme.toggle()">
+            {{theme.effective()=== 'dark' ? '🌟': '☀️'}}
+        </button>
+        </div>
+
 
     </nav>
 
-    <app-favorites-panel
-     [open]="showFavs()" 
-     (close)= "showFavs.set(false)">
-    </app-favorites-panel>
-    
+
      <router-outlet></router-outlet>
 
     `,
     styles: [`
-    .top-bar { display:flex; gap:.5rem; align-items:center; padding:.5rem; }
+    .top-bar { display:flex;  gap:.5rem; align-items:center; padding:.5rem; }
+    .spacer{flex: 1 1 auto;}
+    .fav-wrap{position:relative;}
     button.active { color:#ff2b77; }
     `]
 })
