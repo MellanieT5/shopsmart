@@ -12,12 +12,7 @@ import {CATEGORIES, type Category} from '../core/categories';
     standalone: true,
     imports: [ReactiveFormsModule,NgFor,CurrencyPipe],
     changeDetection: ChangeDetectionStrategy.OnPush,
-      styles: [`
-      form {display:grid; gap:8px; max-width:360px; margin: .5rem 0;}
-      input {padding:.4rem;}
-      button {margin-top:.4rem;}
-      ul {margin-top:1rem;}
-      `],
+    
     
     template: ` 
     <h2>Admin</h2>
@@ -49,11 +44,12 @@ import {CATEGORIES, type Category} from '../core/categories';
             {{p.id}} - {{p.name}} - {{p.price | currency:'EUR'}} - {{p.category}}
             <button type="button" (click)="onDelete(p.id)">Delete </button> <!--gumb pokliče onDelete-->
         
-
-       
         </li>
     </ul>
-   `
+
+   `,
+styleUrls: ['../styles/features/admin-page.scss']
+
 })
 export class AdminPageComponent { 
     svc= inject (ProductService);
@@ -89,4 +85,4 @@ add(){ //za submit
     this.form.reset({name:'', price: 0, category: '', description: ''}); //vrne form v začetno stanje
 }
 }
-
+ 

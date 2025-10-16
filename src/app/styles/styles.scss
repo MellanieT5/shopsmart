@@ -1,4 +1,11 @@
 //od chata, poglej si SCSS
+@use './core/theme.service';
+@use './core/tokens';
+@use './core/categories';
+@use './core/product.service';
+@use './core/cart.service';
+
+
 :root {
   --bg:        #f7f7f8;
   --text:      #111318;
