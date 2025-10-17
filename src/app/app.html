@@ -1,6 +1,5 @@
 <nav style = "display:flex; gap:.5rem; padding:.5rem">
   <a routerLink="/products ">products</a>
-  <a routerLink="/cart"> Cart</a>
   <a routerLink="/admin"> Admin</a>
 
   <span style="margin-left:auto;"></span>
@@ -13,6 +12,17 @@
   <span *ngIf="theme.effective() ==='light'">🌟</span>
 </button>
 
+<!-- ZA CART BUTTON-->
+  <button
+    class="icon-btn"
+    type="button"
+    [routerLink]="['/cart']"
+    aria-label="Open cart">
+    🛒
+    <span class="badge" *ngIf="cart.count()">{{ cart.count() }}</span>
+  </button>
+
+<!--ZA FAVORITES BUTTON-->
   <button
     (click)="toggleFavs()"
     [class.active]="cart.favorites().length > 0">
