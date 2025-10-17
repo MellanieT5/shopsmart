@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from "@angular/c
 import {AsyncPipe, CurrencyPipe,NgIf} from '@angular/common';
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import{toSignal} from '@angular/core/rxjs-interop';           //importaš
-import {ProductService} from '../core/product.service';
+import {ProductService, type Product} from '../core/product.service';
 
 
 
@@ -24,20 +24,25 @@ import {ProductService} from '../core/product.service';
         `],
 
     template: `
-   <div class="wrap" *ngIf="prod(); else notFound"> <!--prikaže detajle, samo če ni null-->
+
+<<div class="wrap" *ngIf="prod() as p; else notFound">
   <a class="back" routerLink="/products">← Back to products</a>
 
   <div class="row">
-    <div class="img"><!-- sliko bom dala kasneje --></div>
+    <div class="img"></div>
 
     <div>
-      <h1>{{ prod()!.name }}</h1> <!--poveš, da v tem bloku ni null, da gre skozi currency pipe-->
-
+      <h1>{{ p.name }}</h1>
       <div class="meta">
-        {{ prod()!.category }} • {{ prod()!.price | currency:'EUR' }}
+        {{ p.category }} • {{ p.price | currency:'EUR' }}
       </div>
 
-      <p class="desc" *ngIf="prod()!.description as d">{{ d }}</p> <!--pokaže le opis, če obstaja, z as d, ga poimenuješ in uporabiš-->
+      <img *ngIf="p.imageData as img"
+           [src]="img"
+           [alt]="p.name"
+           style="max-width:320px; border-radius:12px; border:1px solid #eee; display:block; margin:.5rem 0" />
+
+      <p class="desc" *ngIf="p.description as d">{{ d }}</p>
     </div>
   </div>
 </div>
@@ -55,6 +60,11 @@ import {ProductService} from '../core/product.service';
 export class ProductDetailComponent {
     private route=inject(ActivatedRoute); //vbrizgaš trenutno aktivno ruto in service produktov
     private svc = inject (ProductService);
+
+    private id=computed(()=>Number(this.route.snapshot.paramMap.get('id')));
+
+    product= computed<Product |undefined>(()=> 
+    this.svc.products().find(p=>p.id === this.id()))
 
     private paramMap = toSignal (this.route.paramMap, {initialValue:this.route.snapshot.paramMap})
   //route.paraMap je observable, toSignal ga spremeni v signal, da ga lahko bereš kot funkcijo paramMap

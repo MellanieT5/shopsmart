@@ -50,7 +50,6 @@ import { HighlightPipe } from '../shared/pipe/highlight.pipe';
         </a>
         — {{ p.price | currency:'EUR' }} — {{ p.category }}
 
-        <button type="button" (click)="svc.remove(p.id)">Remove</button>
         <button type="button" (click)="cart.add(p.id, 1)">Add to cart</button>
 
         <button

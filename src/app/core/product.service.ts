@@ -7,8 +7,14 @@ import { catchError, of } from 'rxjs';//lovi napake, vrača prazen seznam namest
 import type {Category} from './categories';//tipkovni import (Typecript samo za tipe)
 
 
-export type Product = { id: number; name: string; price: number; category: Category; description?:string };//definicija tipov
-
+export type Product = {
+  id: number;
+  name: string; 
+  price: number; 
+  category: Category; 
+  description?:string //definicija tipov
+  imageData?:string;
+};
 @Injectable({ providedIn: 'root' })
 export class ProductService {
   private http = inject(HttpClient);

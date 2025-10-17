@@ -165,7 +165,7 @@ placeOrder() {
     setTimeout (()=> {
         this.cart.clear();
         this.router.navigateByUrl('/products');
-    }, 4000);
+    }, 3500);
 }
 
 launchConfetti() {
