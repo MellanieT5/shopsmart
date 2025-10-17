@@ -1,9 +1,6 @@
 //od chata, poglej si SCSS
-@use './core/theme.service';
-@use './core/tokens';
-@use './core/categories';
-@use './core/product.service';
-@use './core/cart.service';
+@use 'styles/core';
+@use 'styles/features';
 
 
 :root {

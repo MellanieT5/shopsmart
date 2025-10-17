@@ -12,20 +12,22 @@ import {ProductService, type Product} from '../core/product.service';
     imports:[NgIf, RouterLink, CurrencyPipe],
     changeDetection:ChangeDetectionStrategy.OnPush,
     styles: [`
-        .wrap{max-width:780px;margin:1.25rem auto; padding:1rem}
-        .back{display:inline-block; margin-bottom:.75rem;opacity:.85;}
-        .row{display:flex; gap:1rem; align-items:flex-start;}
-        .img{width:240px; height: 240px; border-radius:0.75}
-        h1 {font-size:1.6rem; margin:0 0 .25rem;}
-        .meta{opacity:.85;}
-        .desc{margin-top:1rem;opacity:.95; white-space:pre-wrap;}
-        @media (max-width:700px) { .row {flex-direction:column;} .img {width:100%; height: 200px}}
-        
+       /* features.scss (dodaš spodaj) */
+.product-detail {
+  .wrap { max-width: 980px; margin: 1.25rem auto; padding: 0 1rem; }
+  .back { display: inline-block; margin-bottom: .75rem; opacity: .85; }
+  .row { display: grid; grid-template-columns: 1fr 1.4fr; gap: 1rem; align-items: start; }
+  .imgbox { width: 100%; aspect-ratio: 1/1; border-radius: 12px; background: #f3f4f6; }
+  .meta { opacity: .85; margin: .25rem 0 .5rem; }
+  .desc { margin-top: .75rem; opacity: .95; white-space: pre-wrap; }
+  @media (max-width: 820px) { .row { grid-template-columns: 1fr; } .imgbox { height: 220px; } }
+}
+
         `],
 
     template: `
 
-<<div class="wrap" *ngIf="prod() as p; else notFound">
+<div class="wrap" *ngIf="prod() as p; else notFound">
   <a class="back" routerLink="/products">← Back to products</a>
 
   <div class="row">

@@ -12,9 +12,8 @@ import { CartPageComponent } from "./features/cart-page.component";
 @Component({
   selector: 'app-root',
   standalone:true,
-  imports: [RouterOutlet, RouterLink, NgIf, FavoritesPanelComponent, CartPageComponent],
+  imports: [RouterOutlet, RouterLink, NgIf, FavoritesPanelComponent],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
 
 })
 

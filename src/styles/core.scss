@@ -1,0 +1,58 @@
+// 🎨 Barve
+:root {
+  --color-primary: #3b82f6;
+  --color-accent: #ff2b77;
+  --color-bg: #fafafa;
+  --color-text: #222;
+}
+
+// 🌐 Osnovni reset
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: system-ui, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+// 🧰 Utility classi
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.btn {
+  background: var(--color-primary);
+  color: white;
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: #2563eb;
+}
+
+.heart {
+  border: 1px solid var(--color-primary);
+  background: transparent;
+  line-height: 1;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.5rem;
+  opacity: 0.8;
+}
+.heart.active {
+  background: var(--color-accent);
+  color: white;
+  opacity: 1;
+}

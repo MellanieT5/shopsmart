@@ -30,12 +30,11 @@
                 "output": "/"
               }
             ],
-            "styles": ["src/app/styles/styles.scss"],
+            "styles": ["src/styles.scss"],
             
             "stylePreprocessorOptions": {
-              "includePaths": [
-                "src/styles"
-              ]
+              "includePaths":  ["src"]
+              
             },
 
             "server": "src/main.server.ts",

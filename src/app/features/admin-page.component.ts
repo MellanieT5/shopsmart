@@ -1,7 +1,7 @@
 
 import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms"; //importi
-import {NgFor} from '@angular/common';
+import {NgFor, NgIf} from '@angular/common';
 import { ProductService, Product } from "../core/product.service";
 import { CurrencyPipe } from "@angular/common"; 
 import {CATEGORIES, type Category} from '../core/categories';
@@ -10,7 +10,7 @@ import {CATEGORIES, type Category} from '../core/categories';
 @Component({
     selector:'app-admin-page',
     standalone: true,
-    imports: [ReactiveFormsModule,NgFor,CurrencyPipe],
+    imports: [ReactiveFormsModule,NgFor,CurrencyPipe, NgIf],
     changeDetection: ChangeDetectionStrategy.OnPush,
     
     
@@ -36,14 +36,15 @@ import {CATEGORIES, type Category} from '../core/categories';
         <input type="file" accept="image/*" (change)="onImageSelected($event)" />
 
         <!-- Preview -->
-        <div *ngIf="imageData" style="margin-top:.5rem">
-        <div style="font-size:.9rem; opacity:.75">Preview:</div>
-                <img  *ngIf="p.imageData as img"
-                    [src]="imageData"
-                    alt="Preview"
-                    style="max-width:200px; border-radius:8px; border:1px solid #eee"
-                />
+        <div *ngIf="imageData as img" style="margin-top:.5rem">
+            <div style="font-size:.9rem; opacity:.75">Preview:</div>
+            <img
+                [src]="img"
+                alt="Preview"
+                style="max-width:200px; border-radius:8px; border:1px solid #eee"
+            />
         </div>
+
 
 <button type="submit" [disabled]="form.invalid">Add product</button>
     
@@ -59,7 +60,6 @@ import {CATEGORIES, type Category} from '../core/categories';
     </ul>
 
    `,
-styleUrls: ['../styles/features/admin-page.scss']
 
 })
 export class AdminPageComponent { 

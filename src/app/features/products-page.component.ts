@@ -15,55 +15,75 @@ import { HighlightPipe } from '../shared/pipe/highlight.pipe';
   imports: [NgFor, NgIf, RouterLink, CurrencyPipe, HighlightPipe, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <h2>Products</h2>
+    <h2 class="page-title container">Products</h2>
 
-    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin:.5rem 0;">
-      <input
-        #q
-        placeholder="Search..."
-        [value]="svc.query()"
-        (input)="setQuery(q.value || '')" />
+<div class="container filters">
+  <input
+    #q
+    class="input"
+    placeholder="Search..."
+    [value]="svc.query()"
+    (input)="setQuery(q.value || '')"
+  />
 
-      <select
-        [value]="svc.sortBy()"
-        (change)="setSort($any($event.target).value)">
-        <option value="name">Name</option>
-        <option value="price">Price</option>
-      </select>
+  <select class="input" [value]="svc.sortBy()" (change)="setSort($any($event.target).value)">
+    <option value="name">Name</option>
+    <option value="price">Price</option>
+  </select>
 
-      <button (click)="svc.load()">Reload</button>
+  <div class="price-range">
+    <label>Price:</label>
+    <input class="input input--num" type="number"
+           [value]="form.value.min ?? pmin()"
+           (input)="form.patchValue({ min: +$any($event.target).value })" />
+    <span>–</span>
+    <input class="input input--num" type="number"
+           [value]="form.value.max ?? pmax()"
+           (input)="form.patchValue({ max: +$any($event.target).value })" />
+    <button class="btn btn-secondary" type="button" (click)="resetRange()">Reset</button>
+  </div>
 
-      <!-- Price range -->
-      <span style="margin-left:1rem; opacity:.75">Price:</span>
-      <input type="number" [formControl]="form.controls.min" [attr.min]="pmin()" [attr.max]="pmax()" style="width:7rem; padding:.35rem" />
-      <span>–</span>
-      <input type="number" [formControl]="form.controls.max" [attr.min]="pmin()" [attr.max]="pmax()" style="width:7rem; padding:.35rem" />
-      <button type="button" (click)="resetRange()" style="padding:.35rem .6rem; border-radius:8px;">Reset</button>
+  <button class="btn" type="button" (click)="svc.load()">Reload</button>
+  <span class="results">({{ filtered().length }} found)</span>
+</div>
 
-      <span style="opacity:.7; margin-left:.5rem">({{ filtered().length }} found)</span>
+<div class="container grid">
+  <div *ngFor="let p of filtered(); trackBy: trackById" class="product-card">
+    <a [routerLink]="['/products', p.id]" class="product-link">
+      <img *ngIf="p.imageData; else noImg"
+           [src]="p.imageData"
+           [alt]="p.name"
+           class="product-img" />
+      <ng-template #noImg>
+        <div class="product-placeholder">No image</div>
+      </ng-template>
+
+      <h3 class="product-name" [innerHTML]="p.name | highlight: svc.query()"></h3>
+    </a>
+
+    <div class="product-meta">
+      <span class="product-price">{{ p.price | currency:'EUR' }}</span>
+      <span class="dot">•</span>
+      <span class="product-category">{{ p.category }}</span>
     </div>
 
-    <ul *ngIf="filtered().length; else empty">
-      <li *ngFor="let p of filtered(); trackBy: trackById" style="display:flex; gap:.5rem; align-items:center;">
-        <a [routerLink]="['/products', p.id]">
-          <span [innerHTML]="p.name | highlight: svc.query()"></span>
-        </a>
-        — {{ p.price | currency:'EUR' }} — {{ p.category }}
+    <div class="product-actions">
+      <button class="btn" type="button" (click)="cart.add(p.id, 1)">Add to cart</button>
+      <button type="button"
+              [attr.aria-pressed]="cart.isFav(p.id)"
+              (click)="cart.toggleFav(p.id)"
+              class="heart"
+              [class.active]="cart.isFav(p.id)">
+        ♥
+      </button>
+    </div>
+  </div>
+</div>
 
-        <button type="button" (click)="cart.add(p.id, 1)">Add to cart</button>
+<ng-template #empty>
+  <div class="container"><p>No products found.</p></div>
+</ng-template>
 
-        <button
-          type="button"
-          [attr.aria-pressed]="cart.isFav(p.id)"
-          (click)="cart.toggleFav(p.id)"
-          class="heart"
-          [class.active]="cart.isFav(p.id)">
-          ♥
-        </button>
-      </li>
-    </ul>
-
-    <ng-template #empty><p>No products in this range.</p></ng-template>
   `,
   styles: [`
     .heart {
