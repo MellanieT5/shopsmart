@@ -3,6 +3,7 @@ import {ProductsPageComponent} from './features/products-page.component';
 import { CartPageComponent } from './features/cart-page.component';
 import { AdminPageComponent } from './features/admin-page.component';
 import {ProductDetailComponent} from './features/product-detail.comonent';
+import { CheckoutPageComponent } from './features/checkout-page.component';
 
 export const routes: Routes = [
     {path: '', redirectTo:'products', pathMatch:'full'},
@@ -10,7 +11,9 @@ export const routes: Routes = [
     {path: 'products/:id', component: ProductDetailComponent},
     {path: 'cart', component: CartPageComponent},
     {path: 'admin', component: AdminPageComponent},
+    {path: 'checkout', component: CheckoutPageComponent}, 
     {path: '**', redirectTo:'products'},
+
 
 ];
 

@@ -2,11 +2,12 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NgIf, NgFor, CurrencyPipe } from '@angular/common';
 import { CartService } from '../core/cart.service';
+import {RouterLink} from '@angular/router'
 
 @Component({
   selector: 'app-cart-page',
   standalone: true,
-  imports: [NgIf, NgFor, CurrencyPipe],
+  imports: [NgIf, NgFor, CurrencyPipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <h2>Cart</h2>
@@ -34,7 +35,12 @@ import { CartService } from '../core/cart.service';
     <ng-template #empty>
       <p>Your cart is empty</p>
     </ng-template>
-  `
+
+    <a routerLink ="/checkout"
+   style="margin-top:1rem; display:inline-block; background:#4f6ef7; color:#fff; padding:.4rem .7rem; border-radius:10px; text-decoration:none;">
+    Dalje ->
+
+`
 })
 export class CartPageComponent {
   cart = inject(CartService);//vbrizgnemo CartService in ga izpostavimo templatu
