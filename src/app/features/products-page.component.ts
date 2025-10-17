@@ -1,72 +1,72 @@
-//prikazuje izdelke
+// prikazuje izdelke + price range filter (brez spreminjanja ProductService)
 
-import { ChangeDetectionStrategy, Component } from "@angular/core"; 
-import { NgFor, NgIf, CurrencyPipe } from '@angular/common';//NgIf, NgFor sta direktivi za if/for v templatu, CurrencyPipe lepo formatira št. kot EUR
-import { ProductService } from '../core/product.service';//je vir podatkov (signali: products/query/filtered)
-import { HighlightPipe } from "../shared/pipe/highlight.pipe";//poudari  ujemanje iskanje v imenu 
-import{RouterLink} from '@angular/router'; //za linke na /products/:id
-import { CartService } from "../core/cart.service";//za add to cart in favorites
-import { inject } from "@angular/core"; //za DI brez konstruktorja
+import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/core';
+import { NgFor, NgIf, CurrencyPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 
+import { ProductService, type Product } from '../core/product.service';
+import { CartService } from '../core/cart.service';
+import { HighlightPipe } from '../shared/pipe/highlight.pipe';
 
-@Component({ //vstavimo komponento
-    selector: 'app-products-page', //ime za HTML
-    standalone: true, //lahko damo v module
-    imports: [NgFor, RouterLink,  NgIf, CurrencyPipe, HighlightPipe], // še več importov 
-    changeDetection: ChangeDetectionStrategy.OnPush, //naj pregleda samo dejanske spremembe 
-    template: `
-        <h2>Products</h2>
+@Component({
+  selector: 'app-products-page',
+  standalone: true,
+  imports: [NgFor, NgIf, RouterLink, CurrencyPipe, HighlightPipe, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <h2>Products</h2>
 
-         <div style= "display: flex; gap:0.5rem; margin-bottom:1rem">
-           <input
-           #q
-            placeholder="Search..."
-            [value]="svc.query()"
-            (input)="setQuery(q.value||'')"/> 
-                        
-        <select
-            [value]="svc.sortBy()"
-            (change)="setSort($any($event.target).value)">
-            <option value="name">Name</option>
-            <option value="price">Price</option>
-        </select>
-            
-            <button (click)="svc.load()">Reload </button>
-        </div> <!--prebere trenutne vrednosti iz signala svc.query(), on input kličemo setQuery, ki nastavi signal ||'' poskrbim da nikoli ne nastavi null/undefined-->
-        <!--value veže na svc.sortBy(), change prebere vrednost iz DOM targeta $any je TS hack, da ne benti nad tipom targeta.-->
-        <!-- reload ponovno naloži podatke (najprej iz localStorage, sicer iz /products.json - logika v servisu) -->
+    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap; margin:.5rem 0;">
+      <input
+        #q
+        placeholder="Search..."
+        [value]="svc.query()"
+        (input)="setQuery(q.value || '')" />
 
+      <select
+        [value]="svc.sortBy()"
+        (change)="setSort($any($event.target).value)">
+        <option value="name">Name</option>
+        <option value="price">Price</option>
+      </select>
 
-        
-        <ul *ngIf = "svc.filtered().length; else empty"><!--prikazuje seznam samo, če filtrirani produkti niso prazni. (filtrira->query, sortira->sortBy) -->
-            <li *ngFor = "let p of svc.filtered(); trackBy: trackById" style="display:flex; gap:.5rem;"> <!--ponovi element za vsak produkt-->
-                
-                <a [routerLink] = "['/products', p.id]"> <!--vodi na productDetailComponent za ta id-->
-                    <span [innerHTML]="p.name | highlight:svc.query()"> </span> <!--highlight pipe vrne HTML z označenim ujemanjem, zato uporabiš innerHTML-->
-                </a> 
-                -{{p.price | currency: 'EUR'}} - {{p.category}}
+      <button (click)="svc.load()">Reload</button>
 
-                <button type= "button" (click)="svc.remove(p.id)">Remove </button>
+      <!-- Price range -->
+      <span style="margin-left:1rem; opacity:.75">Price:</span>
+      <input type="number" [formControl]="form.controls.min" [attr.min]="pmin()" [attr.max]="pmax()" style="width:7rem; padding:.35rem" />
+      <span>–</span>
+      <input type="number" [formControl]="form.controls.max" [attr.min]="pmin()" [attr.max]="pmax()" style="width:7rem; padding:.35rem" />
+      <button type="button" (click)="resetRange()" style="padding:.35rem .6rem; border-radius:8px;">Reset</button>
 
-                <button type ="button" (click)="cart.add(p.id,1)">Add to cart </button>
+      <span style="opacity:.7; margin-left:.5rem">({{ filtered().length }} found)</span>
+    </div>
 
-                 <button type="button"
-                [attr.aria-pressed]="cart.isFav(p.id)" 
-                (click)="cart.toggleFav(p.id)"
-                class="heart"
-                [class.active]="cart.isFav(p.id)"><!--attr... izboljša dostopnost(toggle button)
-                class active  doda CSS, ko je v favs
-                click=cart.... doda/odstrani in najljubših-->
+    <ul *ngIf="filtered().length; else empty">
+      <li *ngFor="let p of filtered(); trackBy: trackById" style="display:flex; gap:.5rem; align-items:center;">
+        <a [routerLink]="['/products', p.id]">
+          <span [innerHTML]="p.name | highlight: svc.query()"></span>
+        </a>
+        — {{ p.price | currency:'EUR' }} — {{ p.category }}
+
+        <button type="button" (click)="svc.remove(p.id)">Remove</button>
+        <button type="button" (click)="cart.add(p.id, 1)">Add to cart</button>
+
+        <button
+          type="button"
+          [attr.aria-pressed]="cart.isFav(p.id)"
+          (click)="cart.toggleFav(p.id)"
+          class="heart"
+          [class.active]="cart.isFav(p.id)">
           ♥
         </button>
+      </li>
+    </ul>
 
-            </li>
-        </ul>
-
-        <ng-template #empty><p>No products found. </p></ng-template>
-    
-    `,
-    styles:[`//osnovni videz srčka
+    <ng-template #empty><p>No products in this range.</p></ng-template>
+  `,
+  styles: [`
     .heart {
       border: 1px solid var(--border, #444);
       background: transparent;
@@ -75,18 +75,53 @@ import { inject } from "@angular/core"; //za DI brez konstruktorja
       border-radius: .5rem;
       opacity:.8;
     }
-    .heart.active { background: #ff2b77; color: white; opacity:1; } 
-  `] 
+    .heart.active { background: #ff2b77; color: white; opacity:1; }
+  `]
 })
-
 export class ProductsPageComponent {
+  svc = inject(ProductService);
+  cart = inject(CartService);
+  fb = inject(FormBuilder);
 
-    svc=inject(ProductService);
-    cart=inject(CartService);
-    
+  // surovi produkti iz servisa
+  products = this.svc.products;
 
-    setQuery(v: string) { this.svc.query.set(v); } //setQuery, setSort sta kratki helperj, ki nastavljata signals v ProductService
-    setSort(v: string) { this.svc.sortBy.set(v as 'name' | 'price'); }
-    trackById =(_:number, p: {id:number}) => p.id; //poskrbi, da angular sledi elementom po id (bolj učinkovito renderiranje)
+  // min / max izračunana iz kataloga
+  pmin = computed(() => {
+    const arr = this.products().map(p => p.price);
+    return arr.length ? Math.min(...arr) : 0;
+  });
+  pmax = computed(() => {
+    const arr = this.products().map(p => p.price);
+    return arr.length ? Math.max(...arr) : 0;
+  });
+
+  // formular za price range
+  form = this.fb.nonNullable.group({
+    min: [0],
+    max: [0],
+  });
+
+  constructor() {
+    // nastavi začetni range na celoten razpon cen
+    this.form.patchValue({ min: this.pmin(), max: this.pmax() }, { emitEvent: false });
+  }
+
+  // lokalni filter: najprej uporabi servisov filtered() (query + sort),
+  // nato dodatno filtriraj po cenovnem rangu
+  filtered = computed<Product[]>(() => {
+    const base = this.svc.filtered(); // že upošteva query + sort
+    const min = Number(this.form.value.min ?? this.pmin());
+    const max = Number(this.form.value.max ?? this.pmax());
+    return base.filter(p => p.price >= min && p.price <= max);
+  });
+
+  resetRange() {
+    this.form.patchValue({ min: this.pmin(), max: this.pmax() });
+  }
+
+  setQuery(v: string) { this.svc.query.set(v); }
+  setSort(v: string) { this.svc.sortBy.set(v as 'name' | 'price'); }
+
+  trackById = (_: number, p: Product) => p.id;
 }
-

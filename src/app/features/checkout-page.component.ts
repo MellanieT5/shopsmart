@@ -165,34 +165,67 @@ placeOrder() {
     setTimeout (()=> {
         this.cart.clear();
         this.router.navigateByUrl('/products');
-    }, 50000);
+    }, 4000);
 }
 
 launchConfetti() {
-    const host = document.querySelector('.confetti');
-    if (!host) return;
-    host.innerHTML= '';
-    const colors = ['#f87171','#fbbf24','#34d399','#60a5fa','#a78bfa','#f472b6'];
-    const W=window.innerWidth;
-    for (let i = 0; i < 140; i++) {
+  // Ustvari host direktno na body (ne zanašaj se na .confetti v templatu)
+  const host = document.createElement('div');
+  Object.assign(host.style, {
+    position: 'fixed',
+    top: '-10px',
+    left: '0',
+    width: '100%',
+    height: '0px',
+    pointerEvents: 'none',
+    zIndex: '99999',
+  } as CSSStyleDeclaration);
+  document.body.appendChild(host);
+
+  // poskrbi za @keyframes, če še ne obstaja
+  const STYLE_ID = 'confetti-fall-keyframes';
+  if (!document.getElementById(STYLE_ID)) {
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = `
+      @keyframes confetti-fall {
+        0%   { transform: translateY(-10vh) rotate(0deg);   opacity: 1; }
+        100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  const colors = ['#f87171','#fbbf24','#34d399','#60a5fa','#a78bfa','#f472b6'];
+  const W = window.innerWidth;
+  const N = 140;
+
+  for (let i = 0; i < N; i++) {
     const e = document.createElement('i');
     const size = 6 + Math.random() * 10;
     const left = Math.random() * W;
     const delay = Math.random() * 0.4;
     const duration = 1.8 + Math.random() * 1.6;
 
-    e.style.position = 'absolute';           // <— DODAJ
-    e.style.willChange = 'transform,opacity';// (neobvezno)
-    e.style.background = colors[i % colors.length];
-    e.style.left = left + 'px';
-    e.style.width = size + 'px';
-    e.style.height = size * 1.4 + 'px';
-    e.style.animation = `fall ${duration}s ease-in forwards`;
-    e.style.animationDelay = `${delay}s`;
-    e.style.transform = 'translateY(-10vh)';
+    Object.assign(e.style, {
+      position: 'absolute',
+      willChange: 'transform,opacity',
+      background: colors[i % colors.length],
+      left: `${left}px`,
+      width: `${size}px`,
+      height: `${size * 1.4}px`,
+      transform: 'translateY(-10vh)',
+      animation: `confetti-fall ${duration}s ease-in forwards`,
+      animationDelay: `${delay}s`,
+    } as CSSStyleDeclaration);
+
     host.appendChild(e);
-    }
+  }
+
+  // Po 3s pospravi host (čistimo DOM)
+  setTimeout(() => host.remove(), 3000);
 }
+
 
 }
  
