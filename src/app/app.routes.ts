@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { LandingPageComponent } from './features/landing-page.component';
 import {ProductsPageComponent} from './features/products-page.component';
 import { CartPageComponent } from './features/cart-page.component';
 import { AdminPageComponent } from './features/admin-page.component';
@@ -7,6 +8,9 @@ import { CheckoutPageComponent } from './features/checkout-page.component';
 import { HistoryPageComponent } from './features/history-page.component';
 
 export const routes: Routes = [
+    {path: '', component:LandingPageComponent},
+    {path:'products', loadComponent:()=>import('./features/products-page.component').then(m=>m.ProductsPageComponent)},
+    
     {path: '', redirectTo:'products', pathMatch:'full'},
     {path: 'products', component: ProductsPageComponent},
     {path: 'products/:id', component: ProductDetailComponent},
@@ -14,7 +18,7 @@ export const routes: Routes = [
     {path: 'admin', component: AdminPageComponent},
     {path: 'checkout', component: CheckoutPageComponent}, 
     {path: '**', redirectTo:'products'},
-    {path:'history', component: HistoryPageComponent},
+    {path:'history', loadComponent:()=>import('./features/history-page.component').then(m=>m.HistoryPageComponent)},
 ];
 
 //''(prazna pot)--> preusmeri na /products
