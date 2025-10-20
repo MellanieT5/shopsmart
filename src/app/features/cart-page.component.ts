@@ -10,35 +10,65 @@ import {RouterLink} from '@angular/router'
   imports: [NgIf, NgFor, CurrencyPipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+  <div class="cart-wrap">
+  <div class="cart-header">
     <h2>Cart</h2>
+    <a class="btn btn-secondary" routerLink="/history">History</a>
+  </div>
 
-    <div *ngIf="cart.lines().length; else empty"> <!--če ima košarica lines, pokaže seznam, drugače prikaže #empty-->
-      <ul>
-        <li *ngFor="let line of cart.lines(); trackBy: trackById" 
-            style="display:flex; gap:.5rem; align-items:center;"><!--ngfore čez joinane vrstice iz servisa lines, vrne {product,qty,lineTotal}-->
-          <strong>{{ line.product.name }}</strong>
-          — {{ line.product.price | currency:'EUR' }} x {{ line.qty }}
-          <span style="margin-left:auto">
-            = <strong>{{ line.lineTotal | currency:'EUR' }}</strong>
-          </span>
+  <ng-container *ngIf="cart.lines().length; else empty">
 
-          <button (click)="cart.add(line.product.id, 1)">+</button>
-          <button (click)="cart.setQty(line.product.id, line.qty - 1)">-</button>
-          <button (click)="cart.remove(line.product.id)">Remove</button>
-        </li>
-      </ul>
+    <div class="cart-list">
+      <div *ngFor="let line of cart.lines(); trackBy: trackById" class="cart-item">
+        <!-- image -->
+        <img class="cart-img"
+             [src]="line.product.imageData || 'assets/no-image.png'"
+             [alt]="line.product.name" />
 
-      <p><strong>Total: {{ cart.total() | currency:'EUR' }}</strong></p> <!--skupni seštevek-->
-      <button (click)="cart.clear()">Clean cart</button>
+        <!-- name + unit price -->
+        <div class="cart-info">
+          <div class="cart-name">{{ line.product.name }}</div>
+          <div class="muted">{{ line.product.price | currency:'EUR' }}</div>
+        </div>
+
+        <!-- qty -->
+        <div class="cart-qty">
+          <button class="btn-ghost qty-btn" (click)="cart.add(line.product.id, 1)"
+          style="background:#3b82f6; color: white; border: none; padding: 0.35rem 0.65rem; border-radius: 6px; font-weight:600;">+</button>
+          <div class="cart-qty-value">{{ line.qty }}</div>
+          <button class="btn-ghost qty-btn" (click)="cart.setQty(line.product.id, line.qty - 1)"
+          style="background:#3b82f6; color:white; border:none; padding:0.35rem 0.65rem; border-radius:6px; font-weight:600;">−</button>
+        </div>
+
+        <!-- subtotal -->
+        <div class="cart-subtotal">
+          {{ line.lineTotal | currency:'EUR' }}
+        </div>
+
+        <!-- remove -->
+        <button class="btn btn-secondary cart-remove" (click)="cart.remove(line.product.id)">Remove</button>
+      </div>
     </div>
 
-    <ng-template #empty>
-      <p>Your cart is empty</p>
-    </ng-template>
+    <!-- total + clear -->
+    <div class="cart-total-box">
+      <div class="total-label">TOTAL:</div>
+      <div class="total-value">{{ cart.total() | currency:'EUR' }}</div>
+      <button class="btn btn-secondary clear-btn" (click)="cart.clear()">Clear cart</button>
+    </div>
 
-    <a routerLink ="/checkout"
-   style="margin-top:1rem; display:inline-block; background:#4f6ef7; color:#fff; padding:.4rem .7rem; border-radius:10px; text-decoration:none;">
-    Dalje ->
+    <!-- footer actions -->
+    <div class="cart-actions">
+      <a class="btn btn-secondary" routerLink="/products">← Back</a>
+      <a class="btn" routerLink="/checkout">Next →</a>
+    </div>
+  </ng-container>
+
+  <ng-template #empty>
+    <p>Your cart is empty.</p>
+  </ng-template>
+</div>
+
 
 `
 })

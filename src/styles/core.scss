@@ -22,12 +22,24 @@ body {
   line-height: 1.5;
 }
 
-// 🧰 Utility classi
-.container {
+
+@mixin container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
 }
+
+@mixin card{
+  background:#fff;
+  border: 1px solid #e5e7eb;
+  border-radius:12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.04);
+}
+
+.card{
+  @include card;
+}
+
 
 .btn {
   background: var(--color-primary);
@@ -56,3 +68,4 @@ body {
   color: white;
   opacity: 1;
 }
+
