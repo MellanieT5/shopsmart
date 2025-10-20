@@ -3,6 +3,7 @@ import { NgIf, NgFor, CurrencyPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CartService } from '../core/cart.service';
+import { HistoryService } from '../core/history.service';
 
 @Component({
   selector: 'app-checkout-page',
@@ -126,6 +127,8 @@ import { CartService } from '../core/cart.service';
 export class CheckoutPageComponent {
   cart = inject(CartService);
   router = inject(Router);
+  history=inject(HistoryService);
+
 
 back() {
     this.router.navigateByUrl('/cart');
@@ -155,18 +158,52 @@ canBuy(){
     return this.form.valid && this.cart.lines().length > 0;
 }
 
-placeOrder() {
-    if (!this.canBuy ()) {
-        this.form.markAllAsTouched();
-        return;
-    }
-    this.launchConfetti();
-    this.done=true;
-    setTimeout (()=> {
-        this.cart.clear();
-        this.router.navigateByUrl('/products');
-    }, 3500);
+placeOrder(){
+  if(!this.canBuy()) {
+    this.form.markAllAsTouched();
+    return;
+  }
+
+  //da morajo vstavit osebne podatke
+  const v=this.form.getRawValue();
+  const order={
+    date: new Date().toISOString(),
+    total:this.cart.total(),
+    itemCount:this.cart.lines().length,
+    customer: {
+      firstName: v.firstName,
+      lastName: v.lastName,
+      address:v.address,
+      city:v.city,
+      postal:v.postal,
+      shipping:v.shipping,
+      payment:v.payment,
+    },
+
+    items:this.cart.lines().map(l=> ({
+      id:l.product.id,
+      name:l.product.name,
+      price:l.product.price,
+      qty:l.qty,
+      imageData:l.product.imageData,
+    })),
+  };
+//shrani v zgodovino, ki je še trenutno nimam narejene
+  this.history.add(order);
+
+//pokaže koneti ter sporočlo
+   this.launchConfetti();
+   this.done=true;
+
+  //počisti in preosmeri
+   setTimeout(()=> {
+    this.cart.clear();
+    this.router.navigate (['/history']); 
+  }, 3500); 
 }
+   
+
+
 
 launchConfetti() {
   // Ustvari host direktno na body (ne zanašaj se na .confetti v templatu)

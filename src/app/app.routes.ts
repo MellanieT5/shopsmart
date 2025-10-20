@@ -4,6 +4,7 @@ import { CartPageComponent } from './features/cart-page.component';
 import { AdminPageComponent } from './features/admin-page.component';
 import {ProductDetailComponent} from './features/product-detail.comonent';
 import { CheckoutPageComponent } from './features/checkout-page.component';
+import { HistoryPageComponent } from './features/history-page.component';
 
 export const routes: Routes = [
     {path: '', redirectTo:'products', pathMatch:'full'},
@@ -13,8 +14,7 @@ export const routes: Routes = [
     {path: 'admin', component: AdminPageComponent},
     {path: 'checkout', component: CheckoutPageComponent}, 
     {path: '**', redirectTo:'products'},
-
-
+    {path:'history', component: HistoryPageComponent},
 ];
 
 //''(prazna pot)--> preusmeri na /products
