@@ -15,7 +15,9 @@ import { HighlightPipe } from '../shared/pipe/highlight.pipe';
   imports: [NgFor, NgIf, RouterLink, CurrencyPipe, HighlightPipe, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+  <div class="topbar">
     <h2 class="page-title container">Products</h2>
+  </div>
 
 <div class="container filters">
   <input
