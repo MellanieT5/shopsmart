@@ -198,7 +198,7 @@ placeOrder(){
   //počisti in preosmeri
    setTimeout(()=> {
     this.cart.clear();
-    this.router.navigate (['/history']); 
+    this.router.navigate (['/products']); 
   }, 3500); 
 }
    

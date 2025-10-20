@@ -270,3 +270,14 @@ span {opacity:.7;}
   align-items: center;
   margin-top: .25rem;
 }
+
+.btn.secondary {
+  background: #eef2ff;
+  color: #374151;
+  border: 1px solid #c7d2fe;
+  transition: background 0.2s;
+}
+
+.btn.secondary:hover {
+  background: #dbeafe;
+}

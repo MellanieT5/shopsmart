@@ -1,64 +1,84 @@
-import {Component, inject} from '@angular/core';
-import {NgFor, NgIf, CurrencyPipe, DatePipe} from '@angular/common';
-import {RouterLink} from '@angular/router';
+// src/app/features/history-page.component.ts
+import { Component, signal } from '@angular/core';
+import { NgFor, NgIf, CurrencyPipe, DatePipe, SlicePipe } from '@angular/common';
 import { HistoryService, OrderHistoryItem } from '../core/history.service';
-import {CartService} from '../core/cart.service';
+import {Router} from '@angular/router'; 
 
-@Component ({
-    selector: 'app-history-page',
-    standalone:true,
-    imports: [NgIf, NgFor, CurrencyPipe,DatePipe],
-    template: `
-    <h2 class="page-title container">Order history</h2>
+@Component({
+  standalone: true,
+  imports: [NgFor, NgIf, CurrencyPipe, DatePipe, SlicePipe],
+  template: `
+  <div class="container">
+    <button class="btn secondary" (click)="goBack()">← Back</button>
+    <h2>Order history</h2>
 
-    <div class= "container" *ngIf="history.history().length; else empty">
-        <div class="history-list">
-            <div class="history-card" *ngFor="let h of history.history(); trackBy: trackById">
-                <div class="history-top">
-                    <div>
-                        <div class="history-date"> {{h.date | date: 'medium'}} </div>
-                        <div class = "histroy-items"> {{h.itemCount}} items </div>
-                    </div>    
-                    <div class= "history-total">{{h.total | currency: 'EUR'}} </div>
-                </div>
-
-
-                <div class="history-items-preview">
-                    <img *ngFor="let it of h.items.slice(0,4)"
-                    [src]="it.imageData" [alt]= "it.name" class="preview-img" />
-                    <span *ngIf="h.items.length> 4" class="more">
-                        +{{h.items.length -4}} more
-                    </span>
-                </div>
-
-                <div class= "history-actions">
-                    <button class="btn" (click)="repeat(h)"> Repeat order </button>
-                    <button class= "btn btn-secondary" (click)="remove(h.id)">Remove </button>
-                </div> 
-            </div>
+    <div *ngIf="svc.history().length; else empty" class="history-list">
+      <div class="history-card" *ngFor="let o of svc.history()">
+        <div class="history top">
+          <div class="history date">{{ o.date | date:'medium' }}</div>
+          <div class="history-total">{{ o.total | currency:'EUR' }}</div>
         </div>
 
-
-        <div style="margin-top: .75rem;">
-            <button class="btn btn-ghost" (click)="clearAll()">Clear history</button>
+        <div class="history-items-preview">
+          <img *ngFor="let it of o.items | slice:0:4"
+               [src]="it.imageData || 'assets/no-image.png'"
+               class="preview-img" [alt]="it.name" />
+          <span class="more" *ngIf="o.items.length > 4">+{{ o.items.length - 4 }} more</span>
         </div>
-</div>
 
-<ng-template #empty>
-    <div class="container"> <p> No past orders yet. </p> </div>
-</ng-template>
-    `
+        <div class="history-actions">
+          <button class="btn" (click)="open(o)">Details</button>
+          <button class="btn btn-secondary" (click)="remove(o.id)">Remove</button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #empty><p>No orders yet.</p></ng-template>
+  </div>
+
+  <!-- Simple details drawer -->
+  <div *ngIf="sel()" class="drawer">
+    <div class="drawer-card">
+      <div class="drawer-top">
+        <strong>Order</strong>
+        <button class="btn btn-secondary" (click)="close()">Close</button>
+      </div>
+
+      <div class="muted">{{ sel()!.date | date:'medium' }}</div>
+      <div style="margin:.4rem 0 1rem"><strong>Total: {{ sel()!.total | currency:'EUR' }}</strong></div>
+
+      <div class="items">
+        <div class="row" *ngFor="let it of sel()!.items">
+          <img [src]="it.imageData || 'assets/no-image.png'" class="preview-img" [alt]="it.name" />
+          <div class="info">
+            <div class="name">{{ it.name }}</div>
+            <div class="muted">{{ it.price | currency:'EUR' }} × {{ it.qty }}</div>
+          </div>
+          <div class="sum">{{ (it.price * it.qty) | currency:'EUR' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  `,
+  styles: [`
+    .drawer{ position:fixed; inset:0; background:rgba(0,0,0,.35); display:grid; place-items:center; padding:1rem; z-index:50; }
+    .drawer-card{ background:#fff; border:1px solid #e5e7eb; border-radius:12px; max-width:720px; width:100%; padding:1rem; }
+    .drawer-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:.5rem; }
+    .items .row{ display:grid; grid-template-columns: 56px 1fr auto; gap:.6rem; align-items:center; padding:.4rem 0; }
+    .items .row + .row{ border-top:1px solid #e5e7eb; }
+    .items .info .name{ font-weight:700; }
+    .items .sum{ font-weight:800; }
+  `]
 })
+export class HistoryPageComponent {
+  constructor(public svc: HistoryService, private router:Router) {}
+  sel = signal<OrderHistoryItem | null>(null);
+  open(o: OrderHistoryItem) { this.sel.set(o); }
+  close() { this.sel.set(null); }
+  remove(id:number){ this.svc.remove(id); if (this.sel()?.id === id) this.close(); }
 
-export class HistoryPageComponent{
-    history=inject(HistoryService);
-    cart= inject(CartService);
 
-    trackById= (_:number, h:OrderHistoryItem) => h.id;
-
-    repeat (h:OrderHistoryItem){
-        h.items.forEach(it=>this.cart.add (it.id, it.qty));
-    }
-    remove(id:number) {this.history.remove(id);}
-    clearAll() {this.history.clear();}
+  goBack(){
+    this.router.navigate(['/products']);
+  }
 }
