@@ -10,54 +10,66 @@ import {CATEGORIES, type Category} from '../core/categories';
 @Component({
     selector:'app-admin-page',
     standalone: true,
-    imports: [ReactiveFormsModule,NgFor,CurrencyPipe, NgIf],
+    imports: [ReactiveFormsModule,NgFor,CurrencyPipe],
     changeDetection: ChangeDetectionStrategy.OnPush,
     
     
     template: ` 
-    <h2>Admin</h2>
-    
-    <form [formGroup] = "form" (ngSubmit) = "add()"><!-- se sproži ob kliku gumba -->
-            <input formControlName="name" placeholder="Name" />
-            <input formControlName="price" type="number" inputmode="decimal" min="0" step="1" placeholder="Price"/> <!--da ti sešteva po 1 -->
+   <div class="admin-topbar">
+  <div class="admin-title">Admin</div>
+</div>
 
-            <select formControlName="category" required> <!--da lahko izbereš kategorijo -->
-                <option value="" disabled>-choose category-</option>
-                <option *ngFor="let c of categories" [value]="c"> {{c}} </option> <!--shrani izbrano vrednost direkt kot category, button je onemogočen, vse dokelr je forma neveljavna-->
-                
-        </select>
-        
-        <textarea
-            formControlName="description"
-            rows="3"
-            placeholder="Description (optional)" > <!--kaj ti dejansko izpiše -->
-        </textarea>
+<div class="admin-wrap">
+  <!-- LEFT: FORM -->
+  <form class="admin-form" [formGroup]="form" (ngSubmit)="add()">
+    <div>
+      <label>Name</label>
+      <input class="input" formControlName="name" placeholder="Name" />
+    </div>
 
-        <input type="file" accept="image/*" (change)="onImageSelected($event)" />
+    <div>
+      <label>Price</label>
+      <input class="input" type="number" formControlName="price" />
+    </div>
 
-        <!-- Preview -->
-        <div *ngIf="imageData as img" style="margin-top:.5rem">
-            <div style="font-size:.9rem; opacity:.75">Preview:</div>
-            <img
-                [src]="img"
-                alt="Preview"
-                style="max-width:200px; border-radius:8px; border:1px solid #eee"
-            />
-        </div>
+    <div>
+      <label>Category</label>
+      <select class="input" formControlName="category" required>
+        <option value="" disabled>-choose category-</option>
+        <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+      </select>
+    </div>
 
+    <div>
+      <label>Description (optional)</label>
+      <textarea class="input" formControlName="description"></textarea>
+    </div>
 
-<button type="submit" [disabled]="form.invalid">Add product</button>
-    
+    <div>
+      <label>Choose file</label>
+      <input class="file" type="file" accept="image/*" (change)="onImageSelected($event)" />
+    </div>
 
-    </form>  
+    <button class="btn add-btn" type="submit" [disabled]="form.invalid">Add product</button>
+  </form>
 
-    <ul> <!--seznam vseh produktov iz signala svc. products(), trackBy optimizira render, saj angular sledi elementom po id-->
-        <li *ngFor = "let p of svc.products(); trackBy: trackById">
-            {{p.id}} - {{p.name}} - {{p.price | currency:'EUR'}} - {{p.category}}
-            <button type="button" (click)="onDelete(p.id)">Delete </button> <!--gumb pokliče onDelete-->
-        
-        </li>
-    </ul>
+  <!-- RIGHT: LIST -->
+  <div class="admin-list">
+    <div class="admin-row" *ngFor="let p of svc.products(); trackBy: trackById">
+      <img class="thumb" [src]="p.imageData || 'assets/no-image.png'" [alt]="p.name" />
+      <div class="info">
+        <div class="name">{{ p.name }}</div>
+        <div class="meta">{{ p.price | currency:'EUR' }} • {{ p.category }}</div>
+      </div>
+      <div class="actions">
+        <!-- Edit (za kasneje, ko boš hotla) -->
+        <button type="button" class="btn btn-edit" disabled>Edit</button>
+        <button type="button" class="btn btn-del" (click)="onDelete(p.id)">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
    `,
 
