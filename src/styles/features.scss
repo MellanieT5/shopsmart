@@ -1,6 +1,32 @@
 @use 'styles/core' as core;
 
 
+//------------------------------TOP BAR--------------------------------------------------------------------------
+.topbar{
+  background: var(--color-primary);
+  color: #fff;
+  padding: 1rem 1.5rem 2rem; /* večji spodnji padding = več prostora nad filtri */
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+
+
+  .title{
+    font-size:1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .topbar + .filters {
+    margin-top: 2rem;
+  }
+
+
+
+
+
+
+
 .page-title{
   font-size:1.8rem;
   font-weight:800;

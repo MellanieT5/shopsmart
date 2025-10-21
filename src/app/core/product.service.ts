@@ -7,6 +7,7 @@ import { catchError, of } from 'rxjs';//lovi napake, vrača prazen seznam namest
 import type {Category} from './categories';//tipkovni import (Typecript samo za tipe)
 
 
+
 export type Product = {
   id: number;
   name: string; 
@@ -21,6 +22,8 @@ export class ProductService {
   private api = inject(API_URL);   //vbrizgamo te, da vemo, če lako uporabljamo localStorage
   private platformId = inject(PLATFORM_ID);
   private isBrowser = isPlatformBrowser(this.platformId);
+  category=signal<Category |'all'>('all');
+
 
   private storageKey = 'products-v1';//ime ključa v local storage
 
@@ -43,13 +46,17 @@ export class ProductService {
 }
 
 //filtrira imena in cene ter ti vrne novi seznam s njimi
-  filtered = computed(() => {
-  const q = this.norm(this.query().trim());
-  const by = this.sortBy();
+filtered = computed(() => {
+  const q   = this.norm(this.query().trim());
+  const by  = this.sortBy();
+  const cat = this.category();
 
   const base = this.products().filter(p => {
+    //filtriraj po kategoriji
+    if (cat !== 'all' && p.category !== cat) return false;
+
+    //filtriraj po iskalnem nizu (če obstaja)
     if (!q) return true;
-    // match na ZAČETKU katerekoli besede v imenu
     return this.wordsOf(p.name).some(w => w.startsWith(q));
   });
 
@@ -57,6 +64,9 @@ export class ProductService {
     by === 'name' ? a.name.localeCompare(b.name) : a.price - b.price
   );
 });
+
+
+setCategory(v:Category | 'all') {this.category.set(v);}
 
   constructor() { //ob ustvarjanju storitve takoj naloži podatke (samo v brskalniku, ne na serverju)
     if (this.isBrowser) this.load();
@@ -82,7 +92,8 @@ export class ProductService {
         return of<Product[]>([]);
       }),
     ).subscribe(list => {
-      this.products.set(list);
+      const normalized = list.map(p => ({ ...p, price: Number((p as any).price) }));
+      this.products.set(normalized);
       this.persist();
     });
   }

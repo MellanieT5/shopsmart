@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component, inject, computed } from '@angular/c
 import { NgFor, NgIf, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
-
+import {CATEGORIES, type Category} from '../core/categories';
 import { ProductService, type Product } from '../core/product.service';
 import { CartService } from '../core/cart.service';
 import { HighlightPipe } from '../shared/pipe/highlight.pipe';
@@ -15,7 +15,9 @@ import { HighlightPipe } from '../shared/pipe/highlight.pipe';
   imports: [NgFor, NgIf, RouterLink, CurrencyPipe, HighlightPipe, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
+  <div class="topbar">
     <h2 class="page-title container">Products</h2>
+  </div>
 
 <div class="container filters">
   <input
@@ -26,10 +28,21 @@ import { HighlightPipe } from '../shared/pipe/highlight.pipe';
     (input)="setQuery(q.value || '')"
   />
 
-  <select class="input" [value]="svc.sortBy()" (change)="setSort($any($event.target).value)">
-    <option value="name">Name</option>
-    <option value="price">Price</option>
-  </select>
+<select
+  class="input"
+  [value]="svc.sortBy()"
+  (change)="onSortChange($event)">
+  <option value="name">Name</option>
+  <option value="price">Price</option>
+</select>
+
+<select 
+  class="input"
+  [value]="svc.category()"
+  (change)="svc.setCategory($any($event.target).value ||'all')">
+  <option value="all"> All categories </option>
+  <option *ngFor= "let c of categories" [value]="c"> {{c}}</option>
+</select>
 
   <div class="price-range">
     <label>Price:</label>
@@ -101,10 +114,22 @@ export class ProductsPageComponent {
   svc = inject(ProductService);
   cart = inject(CartService);
   fb = inject(FormBuilder);
+  categories=CATEGORIES
+
+
+  onSortChange(ev:Event){
+    const v= (ev.target as HTMLSelectElement).value as 'name'|'price';
+    this.svc.sortBy.set(v);
+  }
+
+
+  onCategoryChange(ev:Event) {
+    const v= (ev.target as HTMLSelectElement).value as Category | 'all';
+    this.svc.setCategory(v);
+  }
 
   // surovi produkti iz servisa
   products = this.svc.products;
-
   // min / max izračunana iz kataloga
   pmin = computed(() => {
     const arr = this.products().map(p => p.price);
@@ -143,4 +168,8 @@ export class ProductsPageComponent {
   setSort(v: string) { this.svc.sortBy.set(v as 'name' | 'price'); }
 
   trackById = (_: number, p: Product) => p.id;
+
+  setCategory(v:string) {
+    this.svc.category.set((v as Category) ||'all')
+  }
 }
