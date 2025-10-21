@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from "@angular/core";
-import {AsyncPipe, CurrencyPipe,NgIf} from '@angular/common';
+import {AsyncPipe, CurrencyPipe, NgIf} from '@angular/common';
 import { ActivatedRoute, RouterLink } from "@angular/router";
 import{toSignal} from '@angular/core/rxjs-interop';           //importaš
 import {ProductService, type Product} from '../core/product.service';
@@ -26,40 +26,49 @@ import {ProductService, type Product} from '../core/product.service';
         `],
 
     template: `
-
-<div class="wrap" *ngIf="prod() as p; else notFound">
-  <a class="back" routerLink="/products">← Back to products</a>
-
-  <div class="row">
-    <div class="img"></div>
-
-    <div>
-      <h1>{{ p.name }}</h1>
-      <div class="meta">
-        {{ p.category }} • {{ p.price | currency:'EUR' }}
-      </div>
-
-      <img *ngIf="p.imageData as img"
-           [src]="img"
-           [alt]="p.name"
-           style="max-width:320px; border-radius:12px; border:1px solid #eee; display:block; margin:.5rem 0" />
-
-      <p class="desc" *ngIf="p.description as d">{{ d }}</p>
-    </div>
-  </div>
-</div>
-
 <ng-template #notFound>
-  <div class="wrap">
-    <a class="back" routerLink="/products">← Back to products</a>
-    <p>Product not found.</p>
-  </div>
-</ng-template>
+      <div class="product-detail">
+        <div class="wrap">
+          <a class="back" routerLink="/products">← Back to products</a>
+          <p>Product not found.</p>
+        </div>
+      </div>
+    </ng-template>
+
+    <div class="product-detail" *ngIf="prod() as p; else notFound">
+      <div class="wrap">
+        <a class="back" routerLink="/products">← Back to products</a>
+
+        <div class="row">
+
+        <!--leva kolona za sliko-->
+          <div class="imgbox">
+            <img *ngIf="p.imageData as img"
+                 [src]="img"
+                 [alt]="p.name"
+                 style="width:100%; height:100%; object-fit:cover; border-radius:12px; border:1px solid #eee;" />
+          </div>
+
+          <!-- desna kolona za podatke -->
+          <div>
+            <h1>{{ p.name }}</h1>
+            <div class="meta">
+              {{ p.category }} • {{ p.price | currency:'EUR' }}
+            </div>
+            <p class="desc" *ngIf="p.description as d">{{ d }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
     `,
 })
 
 export class ProductDetailComponent {
+  
+
+
+
     private route=inject(ActivatedRoute); //vbrizgaš trenutno aktivno ruto in service produktov
     private svc = inject (ProductService);
 
