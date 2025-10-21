@@ -3,7 +3,7 @@ import { LandingPageComponent } from './features/landing-page.component';
 import {ProductsPageComponent} from './features/products-page.component';
 import { CartPageComponent } from './features/cart-page.component';
 import { AdminPageComponent } from './features/admin-page.component';
-import {ProductDetailComponent} from './features/product-detail.comonent';
+import {ProductDetailComponent} from './features/product-detail.component';
 import { CheckoutPageComponent } from './features/checkout-page.component';
 
 export const routes: Routes = [

@@ -34,17 +34,25 @@
 }
 
 .container{
-  max-width:1200px;
+  max-width:2400px;
   margin:0 auto;
   padding: 0 1rem;
 }
 
 .filters{
-  display:grid;
-  grid-template-columns:1fr auto auto auto auto;
-  gap:.5rem 0.75rem;
+  display:flex;
+  grid-template-columns:2fr auto auto auto auto;
+  gap:0.5rem;
   align-items:center;
   margin-bottom:1rem;
+  flex-wrap:wrap;
+
+.filters .input[type="text"]{
+  flex: 0 0 300px;
+  max-width: 100%
+}
+
+
 
   @media (max-width:860px) {
     grid-template-columns: 1fr 1fr;
@@ -311,15 +319,16 @@ span {opacity:.7;}
 //-------------------------------------------ADMIN PAGE----------------------------------------------------
 
 .admin-topbar{
-  background:#d1d5db;
+  background:#c2c3c5;
   border-bottom:1px solid #cbd5e1;
-  padding:1rem 0;
+  padding:2rem 0;
   margin-bottom:1rem;
 
-  admin-title{
+  .admin-title{
     @include core.container;
-    font-size:1.6rem;
+    font-size:2rem;
     font-weight:800;
+    margin-left: 0.25rem;
   }
 }
 
@@ -433,3 +442,70 @@ span {opacity:.7;}
   border: 1px solid #c7d2fe;
 }
 btn-ghost:hover {background:#e0e7ff;}
+
+//gumb za nazaj 
+.admin-wrap{
+  display:grid;
+  grid-template-columns: 340px 1fr;
+  gap:1rem;
+}
+
+.admin-page{
+  grid-column:1/2;
+  margin-top:#374151;
+  border: 1px solid #c7d2fe;
+  transition: background .2s ease;
+}
+.btn.secondary:hover{
+  background:#dbeafe;
+}
+
+
+//--------------------------------------ZA PROFIL PRODUKTOV---------------------------------------------------------------------
+.product-detail{
+  max-width:1000px;
+  margin:2rem auto;
+  display:flex;
+  gap:2rem;
+  padding:1rem;
+
+
+@media(max-width: 768px){
+  flex-direction:column;
+  text-align:center;
+}
+}
+
+.product-detail img {
+  width: 400px;
+  height:auto;
+  border-radius:8px;
+  object-fit:cover;
+}
+
+.product-info h1{
+font-size:1.8rem;
+font-weight:700;
+margin:0;
+}
+
+.product-info .price{
+  font-size:1.4rem;
+  color:#3b82f6;
+}
+
+.product-info .category{
+  font-size:1rem;
+  color:#666;
+}
+
+.product-info .desc{
+  font: size 1rem;
+  color:#444;
+}
+
+.product-info .actions{
+  display: flex;
+  gap:1rem;
+}
+
