@@ -120,4 +120,18 @@ setCategory(v:Category | 'all') {this.category.set(v);}
     this.products.update(list => list.filter(p => p.id !== id));
     this.persist();
   }
+
+  update(next: Product) {
+  const list = this.products();
+  const idx = list.findIndex(p => p.id === next.id);
+  if (idx === -1) return;
+
+  const updated = [...list];
+  updated[idx] = { ...list[idx], ...next };
+
+  this.products.set(updated);
+  this.persist();
 }
+
+}
+

@@ -1,5 +1,5 @@
 
-import { ChangeDetectionStrategy, Component, inject } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, signal } from "@angular/core";
 import { ReactiveFormsModule, FormBuilder, Validators } from "@angular/forms"; //importi
 import {NgFor, NgIf} from '@angular/common';
 import { ProductService, Product } from "../core/product.service";
@@ -21,7 +21,7 @@ import {CATEGORIES, type Category} from '../core/categories';
 
 <div class="admin-wrap">
   <!-- LEFT: FORM -->
-  <form class="admin-form" [formGroup]="form" (ngSubmit)="add()">
+<form class="admin-form" [formGroup]="form" (ngSubmit)="onSubmit()">
     <div>
       <label>Name</label>
       <input class="input" formControlName="name" placeholder="Name" />
@@ -63,7 +63,7 @@ import {CATEGORIES, type Category} from '../core/categories';
         <div class="meta">{{ p.price | currency:'EUR' }} • {{ p.category }}</div>
       </div>
       <div class="actions">
-        <button type="button" class="btn btn-edit" disabled>Edit</button>
+        <button type="button" class="btn btn-edit" (click)="openEdit(p)">Edit</button>
         <button type="button" class="btn btn-del" (click)="onDelete(p.id)">Delete</button>
       </div>
     </div>
@@ -73,53 +73,106 @@ import {CATEGORIES, type Category} from '../core/categories';
    `,
 
 })
-export class AdminPageComponent { 
-    svc= inject (ProductService);
-    fb= inject(FormBuilder); //vbrizgamo storitev in form builder
+export class AdminPageComponent {
+  svc = inject(ProductService);
+  fb  = inject(FormBuilder);
 
-    categories=CATEGORIES; //izpostavimo senam kategorij za *ngFor v selectu 
+  categories = CATEGORIES;
 
-    imageData:string|undefined;
+  // če izbereš novo sliko, jo začasno hranimo tu
+  imageData: string | undefined;
 
-    form = this.fb.nonNullable.group ({ //poskrbi, da value ni nikoli null
-        name: ['', Validators.required], //naredi obvezno  
-        price: [0, [Validators.required, Validators.min(0)]],//naredi obvezno
-        category: ['' as Category | '', Validators.required], //naredi obvezno
-        description: [''], //je optional
+  // če ni 0, smo v "edit" načinu
+  editing = signal<Product | null>(null);
+
+  form = this.fb.nonNullable.group({
+    id:        0,                                // pri dodajanju = 0; pri edit = obstoječi id
+    name:      ['', Validators.required],
+    price:     0 as number,
+    category:  '' as Category | '',
+    description: [''],
+    imageData: [''],                              // shranimo tudi obstojeci base64 url (če obstaja)
+  });
+
+  trackById = (_: number, p: Product) => p.id;
+
+  onDelete(id: number) {
+    this.svc.remove(id);
+    // če brišeš ravno tisti, ki ga urejaš, prekini edit
+    if (this.editing()?.id === id) this.cancelEdit();
+  }
+
+  onImageSelected(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imageData = String(reader.result);
+      // če si v edit načinu, posodobi kontrolno vrednost, da se shrani ob "Save"
+      this.form.patchValue({ imageData: this.imageData });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  openEdit(p: Product) {
+    this.editing.set(p);
+    this.imageData = p.imageData; // ohrani obstoječo sliko
+    this.form.reset({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      category: p.category ?? '',
+      description: p.description ?? '',
+      imageData: p.imageData ?? '',
     });
-    
-    
-    trackById = (_:number, p:Product) => p.id; //vrne primarni ključ -->za ngFor
+    // fokus na ime (opcijsko): setTimeout(() => this.nameInput.nativeElement.focus());
+  }
 
-    onDelete(id:number) {
-        this.svc.remove(id); //pokliče ProductService.remove, ki odstrani produkt in persista v localStorage
-    }
+  cancelEdit() {
+    this.editing.set(null);
+    this.imageData = undefined;
+    this.form.reset({
+      id: 0,
+      name: '',
+      price: 0,
+      category: '',
+      description: '',
+      imageData: '',
+    });
+  }
 
-    onImageSelected(ev:Event) {
-        const input=ev.target as HTMLInputElement;
-        const file = input.files?.[0];
-        if(!file) return;
-        const reader= new FileReader();
-        reader.onload = () => (this.imageData = String(reader.result));
-        reader.readAsDataURL(file);
-    }
+  onSubmit() {
+    if (this.form.invalid) return;
 
-add(){ //za submit
-    if(this.form.invalid) return;
+    const v = this.form.getRawValue();
 
-    const v=this.form.getRawValue(); //prebere trenutne vrednosti kontrol(ne "disabled" filtrov)
-    this.svc.add({ //pripravi payload 
-        name:v.name.trim(), 
-        category:v.category as Category, //category casta v Category
-        price:Number(v.price), //pretvori v število
-        description:v.description.trim() || undefined, // po trimu spremeni polje v undefined, saj je polje opcijsko 
+    if (this.editing()) {
+      // EDIT: združi stare vrednosti s posodobljenimi
+    const next: Product = {
+        id: v.id,
+        name: v.name.trim(),
+        price: Number(v.price),
+        category: v.category as Category,
+        description: v.description?.trim() || undefined,
+        imageData: this.imageData ?? v.imageData ?? this.editing()!.imageData ?? undefined,
+      };
+
+      this.svc.update(next);
+      this.cancelEdit();
+    } else {
+      // ADD: ustvari nov product
+      this.svc.add({
+        name: v.name.trim(),
+        price: Number(v.price),
+        category: v.category as Category,
+        description: v.description?.trim() || undefined,
         imageData: this.imageData,
-    });
-    this.imageData=undefined;
-
-    this.form.reset({name:'', price: 0, category: '', description: ''}); //vrne form v začetno stanje
-    this.imageData=undefined;
-    
+      });
+      this.imageData = undefined;
+      this.form.reset({
+        id: 0, name: '', price: 0, category: '', description: '', imageData: ''
+      });
+    }
+  }
 }
-}
- 
