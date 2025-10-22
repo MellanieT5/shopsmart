@@ -55,6 +55,7 @@ import {CATEGORIES, type Category} from '../core/categories';
 
   <!-- RIGHT: LIST -->
   <div class="admin-list">
+  <div class="list-scroll">
     <div class="admin-row" *ngFor="let p of svc.products(); trackBy: trackById">
       <img class="thumb" [src]="p.imageData || 'assets/no-image.png'" [alt]="p.name" />
       <div class="info">
@@ -62,14 +63,12 @@ import {CATEGORIES, type Category} from '../core/categories';
         <div class="meta">{{ p.price | currency:'EUR' }} • {{ p.category }}</div>
       </div>
       <div class="actions">
-        <!-- Edit (za kasneje, ko boš hotla) -->
         <button type="button" class="btn btn-edit" disabled>Edit</button>
         <button type="button" class="btn btn-del" (click)="onDelete(p.id)">Delete</button>
       </div>
     </div>
   </div>
 </div>
-
 
    `,
 
