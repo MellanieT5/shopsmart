@@ -30,22 +30,28 @@
 }
 
 .container{
-  max-width:2000x;
+  max-width:2000px;
   margin:0 auto;
   padding: 0 1rem;
 }
 
-.filters{
-  display:grid;
-  grid-template-columns:1fr auto auto auto auto;
-  gap:.5rem 0.75rem;
-  align-items:center;
-  margin-bottom:1rem;
+.filters {
+  display: grid;
+  grid-auto-flow: column; /* elementi si sledijo po vrsticah */
+  grid-auto-columns: max-content; /* vsi stolpci razen prvega se prilagodijo vsebini */
+  grid-template-columns: minmax(240px, 360px); /* search bar ima svojo širino */
+  gap: .5rem .75rem;
+  align-items: center;
+  justify-content: start;  /* premakne vse levo */
+  margin-bottom: 1rem;
 
-  @media (max-width:860px) {
-    grid-template-columns: 1fr 1fr;
+  @media (max-width: 860px) {
+    grid-auto-flow: row;
+    grid-template-columns: 1fr;
+    justify-content: stretch;
   }
 }
+
 
 .input{
   background:var(--input-bg);
@@ -175,6 +181,9 @@ span {opacity:.7;}
 .preview-img {width: 48px; height: 48px; object-fit: cover; border-radius: 6px;  border: 1px solid var(--border);  }
 .more {opacity: .7; font-size: .9rem;}
 .history-actions {display:flex; gap: .5rem;}
+
+
+
 
 //----------------------ZA CART---------------------------------------------------------------------------------------------------------
 
