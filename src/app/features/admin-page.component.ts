@@ -35,8 +35,8 @@ import {CATEGORIES, type Category} from '../core/categories';
     <div>
       <label>Category</label>
       <select class="input" formControlName="category" required>
-        <option value="" disabled>-choose category-</option>
-        <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+          <option [ngValue]="''" disabled>-choose category-</option>
+          <option *ngFor="let c of categories" [ngValue]="c">{{ c }}</option>
       </select>
     </div>
 
@@ -85,14 +85,14 @@ export class AdminPageComponent {
   // če ni 0, smo v "edit" načinu
   editing = signal<Product | null>(null);
 
-  form = this.fb.nonNullable.group({
-    id:        0,                                // pri dodajanju = 0; pri edit = obstoječi id
-    name:      ['', Validators.required],
-    price:     0 as number,
-    category:  '' as Category | '',
-    description: [''],
-    imageData: [''],                              // shranimo tudi obstojeci base64 url (če obstaja)
-  });
+  form = this.fb.group({
+  id:        this.fb.control(0, { nonNullable: true }),
+  name:      this.fb.control('', { nonNullable: true, validators: [Validators.required] }),
+  price:     this.fb.control(0, { nonNullable: true }),
+  category:  this.fb.control<'' | Category>('', { nonNullable: true }),
+  description: this.fb.control(''),
+  imageData:   this.fb.control(''),
+});
 
   trackById = (_: number, p: Product) => p.id;
 
@@ -122,7 +122,7 @@ export class AdminPageComponent {
       id: p.id,
       name: p.name,
       price: p.price,
-      category: p.category ?? '',
+      category: (p.category as Category) ?? ('' as const),
       description: p.description ?? '',
       imageData: p.imageData ?? '',
     });
@@ -136,7 +136,7 @@ export class AdminPageComponent {
       id: 0,
       name: '',
       price: 0,
-      category: '',
+       category: '' as const,
       description: '',
       imageData: '',
     });
