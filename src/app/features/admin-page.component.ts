@@ -5,7 +5,6 @@ import {NgFor, NgIf} from '@angular/common';
 import { ProductService, Product } from "../core/product.service";
 import { CurrencyPipe } from "@angular/common"; 
 import {CATEGORIES, type Category} from '../core/categories';
-import {Router} from '@angular/router';
 
 
 @Component({
@@ -16,7 +15,7 @@ import {Router} from '@angular/router';
     
     
     template: ` 
-<div class= "admin-topbar">
+   <div class="admin-topbar">
   <div class="admin-title">Admin</div>
 </div>
 
@@ -56,27 +55,19 @@ import {Router} from '@angular/router';
 
   <!-- RIGHT: LIST -->
   <div class="admin-list">
-    
+  <div class="list-scroll">
     <div class="admin-row" *ngFor="let p of svc.products(); trackBy: trackById">
       <img class="thumb" [src]="p.imageData || 'assets/no-image.png'" [alt]="p.name" />
       <div class="info">
         <div class="name">{{ p.name }}</div>
         <div class="meta">{{ p.price | currency:'EUR' }} • {{ p.category }}</div>
       </div>
-      
       <div class="actions">
-        
-       
         <button type="button" class="btn btn-edit" disabled>Edit</button>
         <button type="button" class="btn btn-del" (click)="onDelete(p.id)">Delete</button>
-        </div>
+      </div>
     </div>
-    
   </div>
-  <div class="admin-back">
-    <button type="button" class="btn secondary" (click)="goBack()">← Back</button>
-  </div>
-
 </div>
 
    `,
@@ -85,7 +76,6 @@ import {Router} from '@angular/router';
 export class AdminPageComponent { 
     svc= inject (ProductService);
     fb= inject(FormBuilder); //vbrizgamo storitev in form builder
-    private router=inject(Router);
 
     categories=CATEGORIES; //izpostavimo senam kategorij za *ngFor v selectu 
 
@@ -114,30 +104,22 @@ export class AdminPageComponent {
         reader.readAsDataURL(file);
     }
 
-add() {
-  if (this.form.invalid) return;
+add(){ //za submit
+    if(this.form.invalid) return;
 
-  const v = this.form.getRawValue() as {
-    name: string;
-    price: number;
-    category: Category | '';
-    description: string;
-  };
+    const v=this.form.getRawValue(); //prebere trenutne vrednosti kontrol(ne "disabled" filtrov)
+    this.svc.add({ //pripravi payload 
+        name:v.name.trim(), 
+        category:v.category as Category, //category casta v Category
+        price:Number(v.price), //pretvori v število
+        description:v.description.trim() || undefined, // po trimu spremeni polje v undefined, saj je polje opcijsko 
+        imageData: this.imageData,
+    });
+    this.imageData=undefined;
 
-  this.svc.add({
-    name: v.name.trim(),
-    category: v.category as Category,
-    price: Number(v.price),
-    description: v.description.trim() || undefined,
-    imageData: this.imageData,
-  });
-
-  this.imageData = undefined;
-  this.form.reset({ name: '', price: 0, category: '', description: '' });
-}
-
-goBack(){
-    this.router.navigate(['/products'])
+    this.form.reset({name:'', price: 0, category: '', description: ''}); //vrne form v začetno stanje
+    this.imageData=undefined;
+    
 }
 }
  
