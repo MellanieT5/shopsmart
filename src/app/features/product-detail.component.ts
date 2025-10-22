@@ -27,39 +27,41 @@ import {ProductService, type Product} from '../core/product.service';
 
     template: `
 <ng-template #notFound>
-      <div class="product-detail">
-        <div class="wrap">
-          <a class="back" routerLink="/products">← Back to products</a>
-          <p>Product not found.</p>
-        </div>
+  <div class="product-detail">
+    <div class="wrap">
+      <a class="back" routerLink="/products">← Back to products</a>
+      <p>Product not found.</p>
+    </div>
+  </div>
+</ng-template>
+
+<div class="product-detail" *ngIf="prod() as p; else notFound">
+  <div class="wrap">
+    <a class="back" routerLink="/products">← Back to products</a>
+
+    <div class="row">
+      <!-- leva: slika -->
+      <div class="imgbox">
+        <img *ngIf="p.imageData as img"
+             [src]="img"
+             [alt]="p.name" />
       </div>
-    </ng-template>
 
-    <div class="product-detail" *ngIf="prod() as p; else notFound">
-      <div class="wrap">
-        <a class="back" routerLink="/products">← Back to products</a>
+      <!-- desno: info -->
+      <div class="info">
+        <h1 class="title">{{ p.name }}</h1>
 
-        <div class="row">
-
-        <!--leva kolona za sliko-->
-          <div class="imgbox">
-            <img *ngIf="p.imageData as img"
-                 [src]="img"
-                 [alt]="p.name"
-                 style="width:100%; height:100%; object-fit:cover; border-radius:12px; border:1px solid #eee;" />
-          </div>
-
-          <!-- desna kolona za podatke -->
-          <div>
-            <h1>{{ p.name }}</h1>
-            <div class="meta">
-              {{ p.category }} • {{ p.price | currency:'EUR' }}
-            </div>
-            <p class="desc" *ngIf="p.description as d">{{ d }}</p>
-          </div>
+        <div class="badges">
+          <span class="badge cat">{{ p.category }}</span>
+          <span class="badge price">{{ p.price | currency:'EUR' }}</span>
         </div>
+
+        <p class="desc" *ngIf="p.description as d">{{ d }}</p>
       </div>
     </div>
+  </div>
+</div>
+
 
     `,
 })

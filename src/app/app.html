@@ -1,44 +1,38 @@
-<nav style = "display:flex; gap:.5rem; padding:.5rem">
-  <a routerLink="/products ">products</a>
-  <a routerLink="/admin"> Admin</a>
+<nav class="main-nav">
+  <a
+    class="nav-link"
+    routerLink="/products"
+    routerLinkActive="active"
+    [routerLinkActiveOptions]="{ exact: true }"
+  >Products</a>
 
-  <span style="margin-left:auto;"></span>
+  <a
+    class="nav-link"
+    routerLink="/admin"
+    routerLinkActive="active"
+  >Admin</a>
+
+  <span class="spacer"></span>
 
   <button
-  (click)="theme.toggle()"
-  class="theme-btn"
-  [attr.aria-label]="theme.effective() === 'dark' ? 'switchto light mode' : 'switch to dark mode'">
-  <span *ngIf="theme.effective() === 'dark'">☀️</span>
-  <span *ngIf="theme.effective() ==='light'">🌟</span>
-</button>
+    (click)="theme.toggle()"
+    class="theme-btn"
+    [attr.aria-label]="theme.effective() === 'dark' ? 'switch to light mode' : 'switch to dark mode'">
+    <span *ngIf="theme.effective() === 'dark'">☀️</span>
+    <span *ngIf="theme.effective() === 'light'">🌟</span>
+  </button>
 
-<!-- ZA CART BUTTON-->
-  <button
-    class="icon-btn"
-    type="button"
-    [routerLink]="['/cart']"
-    aria-label="Open cart">
+  <button class="icon-btn" type="button" [routerLink]="['/cart']" aria-label="Open cart">
     🛒
     <span class="badge" *ngIf="cart.count()">{{ cart.count() }}</span>
   </button>
 
-<!--ZA FAVORITES BUTTON-->
-  <button
-    (click)="toggleFavs()"
-    [class.active]="cart.favorites().length > 0">
-    ♥
-  </button>
-
+  <button type="button" (click)="toggleFavs()" [class.active]="cart.favorites().length > 0">♥</button>
 </nav>
 
-<app-favorites-panel 
-[open]= "showFavs()"
-(close)="showFavs.set(false)"
-></app-favorites-panel>
-
-
-
+<app-favorites-panel
+  [open]="showFavs()"
+  (close)="showFavs.set(false)">
+</app-favorites-panel>
 
 <router-outlet></router-outlet>
-
-

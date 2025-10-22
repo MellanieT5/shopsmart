@@ -1,5 +1,5 @@
 import { Component, signal, inject } from '@angular/core';
-import { RouterOutlet, RouterLink } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import {ThemeService} from './core/theme.service';
 import { NgIf } from "@angular/common"
 import{FavoritesPanelComponent} from './features/favorites-panel.component';
@@ -12,7 +12,7 @@ import { CartPageComponent } from "./features/cart-page.component";
 @Component({
   selector: 'app-root',
   standalone:true,
-  imports: [RouterOutlet, RouterLink, NgIf, FavoritesPanelComponent],
+  imports: [RouterOutlet, RouterLink, NgIf, FavoritesPanelComponent, RouterLinkActive],
   templateUrl: './app.html',
 
 })
