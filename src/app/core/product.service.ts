@@ -36,6 +36,8 @@ export class ProductService {
 
   constructor() {
     if (this.isBrowser) this.load();
+    console.log('API baseUrl =', this.baseUrl);   // ⬅️ dodaj
+    this.load();
   }
 
   // helpers (filtriranje/sort)
@@ -91,10 +93,22 @@ export class ProductService {
         return of<Product[]>([]);
       })
     ).subscribe(list => {
-      const normalized = list.map(p => ({ ...p, price: Number((p as any).price) }));
-      this.products.set(normalized);
-      this.persist();
-    });
+  const normalized = list.map((p: any) => ({
+    id:         p.id ?? p.ID,
+    name:       p.name ?? p.NAME ?? '',
+    category:   p.category ?? p.CATEGORY ?? '',
+    price:      Number(p.price ?? p.PRICE ?? 0),
+    description: p.description ?? p.DESCRIPTION ?? undefined,
+    imageUrl:   p.imageUrl ?? p.IMAGEURL ?? p.IMAGE_URL ?? undefined,
+    stock:      p.stock ?? p.STOCK ?? 0,
+    active:     p.active ?? p.ACTIVE ?? 1,
+    createdAt:  p.createdAt ?? p.CREATEDAT ?? p.CREATED_AT ?? undefined,
+  }));
+
+  this.products.set(normalized);
+  this.persist();
+});
+
   }
 
   // Admin tvoj klic: add(...) -> POST
