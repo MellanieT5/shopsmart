@@ -25,6 +25,13 @@ export class ProductService {
   private isBrowser = isPlatformBrowser(this.platformId);
 
   private baseUrl = `${environment.apiBaseUrl}/api/products`;
+resolveImage(u?: string): string {
+  if (!u) return 'assets/no-image.png';
+  if (u.startsWith('http') || u.startsWith('data:')) return u;
+  if (u.startsWith('/uploads/')) return `${environment.apiBaseUrl}${u}`;
+  return u; // npr. 'assets/...' ali kaj po meri
+}
+
 
   // UI state
   products = signal<Product[]>([]);
@@ -34,11 +41,13 @@ export class ProductService {
 
   private storageKey = 'products-v1';
 
-  constructor() {
-    if (this.isBrowser) this.load();
-    console.log('API baseUrl =', this.baseUrl);   // ⬅️ dodaj
+ constructor() {
+  if (this.isBrowser) {
+    console.log('API baseUrl =', this.baseUrl);
     this.load();
   }
+}
+
 
   // helpers (filtriranje/sort)
   private norm(s: string) {
@@ -56,23 +65,31 @@ export class ProductService {
       if (!q) return true;
       return this.wordsOf(p.name).some(w => w.startsWith(q));
     });
-    return [...base].sort((a, b) => (by === 'name' ? a.name.localeCompare(b.name) : a.price - b.price));
+   // filtered = computed(() => { ... })
+return [...base].sort((a, b) =>
+  by === 'name'
+    ? (a.name || '').localeCompare(b.name || '')      // ← varno, tudi če je ''
+    : (Number(a.price) || 0) - (Number(b.price) || 0) // ← varno štetje
+);
+
   });
   setCategory(v: Category | 'all') { this.category.set(v); }
 
   // pretvori Product -> payload za API
-  private toApi(p: Partial<Product>) {
-    return {
-      name: p.name,
-      category: (p.category as any) ?? null,
-      price: p.price != null ? Number(p.price) : null,
-      description: p.description ?? null,
-      // če nimaš imageUrl, uporabimo imageData (base64) kot placeholder
-      imageUrl: p.imageUrl ?? p.imageData ?? null,
-      stock: p.stock ?? 0,
-      active: p.active ?? 1
-    };
-  }
+ private toApi(p: Partial<Product>) {
+  const num = (v: any) => v == null ? null : Number(String(v).replace(',', '.'));
+
+  return {
+    name: p.name,
+    category: (p.category as any) ?? null,
+    price: num(p.price),                  // ⬅️ zdaj deluje tudi "9,99"
+    description: p.description ?? null,
+    imageUrl: p.imageUrl ?? p.imageData ?? null,
+    stock: num(p.stock) ?? 0,
+    active: num(p.active) ?? 1
+  };
+}
+
 
   // ----- API klici -----
   load() {
@@ -93,20 +110,19 @@ export class ProductService {
         return of<Product[]>([]);
       })
     ).subscribe(list => {
-  const normalized = list.map((p: any) => ({
-    id:         p.id ?? p.ID,
-    name:       p.name ?? p.NAME ?? '',
-    category:   p.category ?? p.CATEGORY ?? '',
-    price:      Number(p.price ?? p.PRICE ?? 0),
-    description: p.description ?? p.DESCRIPTION ?? undefined,
-    imageUrl:   p.imageUrl ?? p.IMAGEURL ?? p.IMAGE_URL ?? undefined,
-    stock:      p.stock ?? p.STOCK ?? 0,
-    active:     p.active ?? p.ACTIVE ?? 1,
-    createdAt:  p.createdAt ?? p.CREATEDAT ?? p.CREATED_AT ?? undefined,
-  }));
-
-  this.products.set(normalized);
-  this.persist();
+ const normalized = (list ?? []).map((p: any) => ({
+  id:        Number(p.id ?? p.ID ?? 0),
+  name:      String(p.name ?? p.NAME ?? ''),           // ← nikoli undefined
+  price:     Number(p.price ?? p.PRICE ?? 0) || 0,     // ← številka ali 0
+  category:  String(p.category ?? p.CATEGORY ?? ''),
+  description: (p.description ?? p.DESCRIPTION) || undefined,
+  imageUrl:  p.imageUrl ?? p.IMAGE_URL ?? p.IMAGEURL ?? undefined,
+  stock:     Number(p.stock ?? p.STOCK ?? 0) || 0,
+  active:    Number(p.active ?? p.ACTIVE ?? 1) || 1,
+  createdAt: p.createdAt ?? p.CREATED_AT ?? p.CREATEDAT ?? undefined,
+}));
+this.products.set(normalized);
+this.persist();
 });
 
   }

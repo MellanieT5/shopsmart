@@ -1,16 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from "@angular/core";
-import {AsyncPipe, CurrencyPipe, NgIf} from '@angular/common';
+import { AsyncPipe, CurrencyPipe, NgIf } from '@angular/common';
 import { ActivatedRoute, RouterLink } from "@angular/router";
-import{toSignal} from '@angular/core/rxjs-interop';           //importaš
-import {ProductService, type Product} from '../core/product.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ProductService, type Product } from '../core/product.service';
 
-
-
-@Component({ //komponent
-    selector: 'app-product-detail', //za html
-    standalone:true,
-    imports:[NgIf, RouterLink, CurrencyPipe],
-    changeDetection:ChangeDetectionStrategy.OnPush,
+@Component({
+    selector: 'app-product-detail',
+    standalone: true,
+    imports: [NgIf, RouterLink, CurrencyPipe],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [`
        /* features.scss (dodaš spodaj) */
 .product-detail {
@@ -22,9 +20,7 @@ import {ProductService, type Product} from '../core/product.service';
   .desc { margin-top: .75rem; opacity: .95; white-space: pre-wrap; }
   @media (max-width: 820px) { .row { grid-template-columns: 1fr; } .imgbox { height: 220px; } }
 }
-
-        `],
-
+    `],
     template: `
 <ng-template #notFound>
   <div class="product-detail">
@@ -40,14 +36,13 @@ import {ProductService, type Product} from '../core/product.service';
     <a class="back" routerLink="/products">← Back to products</a>
 
     <div class="row">
-      <!-- leva: slika -->
       <div class="imgbox">
-        <img *ngIf="p.imageData as img"
-             [src]="img"
-             [alt]="p.name" />
+        <img
+          [src]="svc.resolveImage(p.imageUrl || p.imageData)"
+          [alt]="p.name"
+          (error)="onImgError($event)" />
       </div>
 
-      <!-- desno: info -->
       <div class="info">
         <h1 class="title">{{ p.name }}</h1>
 
@@ -61,31 +56,27 @@ import {ProductService, type Product} from '../core/product.service';
     </div>
   </div>
 </div>
-
-
     `,
 })
-
 export class ProductDetailComponent {
-  
+    private route = inject(ActivatedRoute);
+    svc = inject(ProductService);
 
+    private id = computed(() => Number(this.route.snapshot.paramMap.get('id')));
 
+    product = computed<Product | undefined>(() =>
+        this.svc.products().find(p => p.id === this.id())
+    );
 
-    private route=inject(ActivatedRoute); //vbrizgaš trenutno aktivno ruto in service produktov
-    private svc = inject (ProductService);
+    private paramMap = toSignal(this.route.paramMap, { initialValue: this.route.snapshot.paramMap });
 
-    private id=computed(()=>Number(this.route.snapshot.paramMap.get('id')));
-
-    product= computed<Product |undefined>(()=> 
-    this.svc.products().find(p=>p.id === this.id()))
-
-    private paramMap = toSignal (this.route.paramMap, {initialValue:this.route.snapshot.paramMap})
-  //route.paraMap je observable, toSignal ga spremeni v signal, da ga lahko bereš kot funkcijo paramMap
-
-    prod= computed (()=>{ //izpeljan signal: odvisen je od paramMap in od svc.products
-        const id =Number (this.paramMap().get('id'));
-        if (Number.isNaN (id)) return null; //najprej parsiraš id iz rute, če ni št. null
-        return this.svc.products().find(p=>p.id === id) ?? null;//poiščeš produkt po id, če ga ni vrneš null
+    prod = computed(() => {
+        const id = Number(this.paramMap().get('id'));
+        if (Number.isNaN(id)) return null;
+        return this.svc.products().find(p => p.id === id) ?? null;
     });
-}
 
+    onImgError(event: Event) {
+        (event.target as HTMLImageElement).src = 'assets/no-image.png';
+    }
+}

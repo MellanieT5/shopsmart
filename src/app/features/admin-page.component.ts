@@ -5,6 +5,8 @@ import {NgFor, NgIf} from '@angular/common';
 import { ProductService, Product } from "../core/product.service";
 import { CurrencyPipe } from "@angular/common"; 
 import {CATEGORIES, type Category} from '../core/categories';
+import{HttpClient} from '@angular/common/http';
+import{environment} from '../../environment';
 
 
 @Component({
@@ -57,8 +59,10 @@ import {CATEGORIES, type Category} from '../core/categories';
   <div class="admin-list">
   <div class="list-scroll">
     <div class="admin-row" *ngFor="let p of svc.products(); trackBy: trackById">
-      <img class="thumb" [src]="p.imageData || 'assets/no-image.png'" [alt]="p.name" />
       <div class="info">
+        <img class="thumb"
+     [src]="svc.resolveImage(p.imageUrl || p.imageData)"
+     [alt]="p.name || 'product'" />
         <div class="name">{{ p.name }}</div>
         <div class="meta">{{ p.price | currency:'EUR' }} • {{ p.category }}</div>
       </div>
@@ -76,6 +80,8 @@ import {CATEGORIES, type Category} from '../core/categories';
 export class AdminPageComponent {
   svc = inject(ProductService);
   fb  = inject(FormBuilder);
+  http=inject(HttpClient);
+  apiBase=environment.apiBaseUrl;
 
   categories = CATEGORIES;
 
@@ -86,12 +92,13 @@ export class AdminPageComponent {
   editing = signal<Product | null>(null);
 
   form = this.fb.group({
-  id:        this.fb.control(0, { nonNullable: true }),
-  name:      this.fb.control('', { nonNullable: true, validators: [Validators.required] }),
-  price:     this.fb.control(0, { nonNullable: true }),
-  category:  this.fb.control<'' | Category>('', { nonNullable: true }),
+  id:          this.fb.control(0, { nonNullable: true }),
+  name:        this.fb.control('', { nonNullable: true, validators: [Validators.required] }),
+  price:       this.fb.control(0, { nonNullable: true }),
+  category:    this.fb.control<'' | Category>('', { nonNullable: true }),
   description: this.fb.control(''),
-  imageData:   this.fb.control(''),
+  imageData:   this.fb.control(''),   // ostane, če bi kdaj rabila base64
+  imageUrl:    this.fb.control(''),   // ⬅️ NOVO: URL iz /api/upload
 });
 
   trackById = (_: number, p: Product) => p.id;
@@ -102,19 +109,31 @@ export class AdminPageComponent {
     if (this.editing()?.id === id) this.cancelEdit();
   }
 
-  onImageSelected(ev: Event) {
-    const input = ev.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.imageData = String(reader.result);
-      // če si v edit načinu, posodobi kontrolno vrednost, da se shrani ob "Save"
-      this.form.patchValue({ imageData: this.imageData });
-    };
-    reader.readAsDataURL(file);
-  }
+ onImageSelected(ev: Event) {
+  const input = ev.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
 
+  const fd = new FormData();
+  fd.append('image', file); // ime fielda mora biti "image"
+
+  this.http.post<{ url: string }>(`${this.apiBase}/api/upload`, fd).subscribe({
+    next: (r) => {
+      // r.url je relativna pot, npr. /uploads/abc.jpg
+      // za prikaz v SPA ni nujno da dodamo base, a je čist OK:
+      const full = r.url.startsWith('http') ? r.url : `${this.apiBase}${r.url}`;
+      this.form.patchValue({ imageUrl: full });
+      // opcijsko: pokaži thumbnail takoj
+      this.imageData = full;
+      this.form.patchValue({ imageData: full });
+    },
+    error: (e) => {
+      console.error('upload failed', e);
+      alert('Upload slike ni uspel.');
+    }
+  });
+}
+  
   openEdit(p: Product) {
     this.editing.set(p);
     this.imageData = p.imageData; // ohrani obstoječo sliko
@@ -125,6 +144,7 @@ export class AdminPageComponent {
       category: (p.category as Category) ?? ('' as const),
       description: p.description ?? '',
       imageData: p.imageData ?? '',
+      imageUrl:p.imageUrl ?? '',
     });
     // fokus na ime (opcijsko): setTimeout(() => this.nameInput.nativeElement.focus());
   }
@@ -139,40 +159,37 @@ export class AdminPageComponent {
        category: '' as const,
       description: '',
       imageData: '',
+      imageUrl: ''
     });
   }
 
   onSubmit() {
-    if (this.form.invalid) return;
+   if (this.editing()) {
+  const v = this.form.getRawValue();
+  const next: Product = {
+    id: v.id,
+    name: (v.name || '').trim(),
+    price: Number(v.price) || 0,
+    category: v.category as Category,
+    description: v.description?.trim() || undefined,
+    imageUrl:  v.imageUrl || this.imageData || this.editing()!.imageUrl || undefined,
+    imageData: this.imageData ?? v.imageData ?? this.editing()!.imageData ?? undefined,
+  };
+  this.svc.update(next);
+  this.cancelEdit();
+} else {
+  const v = this.form.getRawValue();
+  this.svc.add({
+    name: (v.name || '').trim(),
+    price: Number(v.price) || 0,
+    category: v.category as Category,
+    description: v.description?.trim() || undefined,
+    imageUrl:  v.imageUrl || this.imageData || undefined,
+    imageData: this.imageData,
+  });
+  this.imageData = undefined;
+  this.form.reset({ id: 0, name: '', price: 0, category: '', description: '', imageData: '', imageUrl: '' });
+}
 
-    const v = this.form.getRawValue();
-
-    if (this.editing()) {
-      // EDIT: združi stare vrednosti s posodobljenimi
-    const next: Product = {
-        id: v.id,
-        name: v.name.trim(),
-        price: Number(v.price),
-        category: v.category as Category,
-        description: v.description?.trim() || undefined,
-        imageData: this.imageData ?? v.imageData ?? this.editing()!.imageData ?? undefined,
-      };
-
-      this.svc.update(next);
-      this.cancelEdit();
-    } else {
-      // ADD: ustvari nov product
-      this.svc.add({
-        name: v.name.trim(),
-        price: Number(v.price),
-        category: v.category as Category,
-        description: v.description?.trim() || undefined,
-        imageData: this.imageData,
-      });
-      this.imageData = undefined;
-      this.form.reset({
-        id: 0, name: '', price: 0, category: '', description: '', imageData: ''
-      });
-    }
   }
 }

@@ -12,7 +12,7 @@ import { HighlightPipe } from '../shared/pipe/highlight.pipe';
 @Component({
   selector: 'app-products-page',
   standalone: true,
-  imports: [NgFor, NgIf, RouterLink, CurrencyPipe, HighlightPipe, ReactiveFormsModule],
+  imports: [NgFor, RouterLink, CurrencyPipe, HighlightPipe, ReactiveFormsModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
   <div class="topbar">
@@ -63,13 +63,11 @@ import { HighlightPipe } from '../shared/pipe/highlight.pipe';
 <div class="container grid">
   <div *ngFor="let p of filtered(); trackBy: trackById" class="product-card">
     <a [routerLink]="['/products', p.id]" class="product-link">
-      <img *ngIf="p.imageData; else noImg"
-           [src]="p.imageData"
-           [alt]="p.name"
-           class="product-img" />
-      <ng-template #noImg>
-        <div class="product-placeholder">No image</div>
-      </ng-template>
+      <img
+        [src]="svc.resolveImage(p.imageUrl || p.imageData)"
+        [alt]="p.name"
+        class="product-img"
+        (error)="onImgError($event)" />
 
       <h3 class="product-name" [innerHTML]="p.name | highlight: svc.query()"></h3>
     </a>
@@ -116,21 +114,17 @@ export class ProductsPageComponent {
   fb = inject(FormBuilder);
   categories=CATEGORIES
 
-
   onSortChange(ev:Event){
     const v= (ev.target as HTMLSelectElement).value as 'name'|'price';
     this.svc.sortBy.set(v);
   }
-
 
   onCategoryChange(ev:Event) {
     const v= (ev.target as HTMLSelectElement).value as Category | 'all';
     this.svc.setCategory(v);
   }
 
-  // surovi produkti iz servisa
   products = this.svc.products;
-  // min / max izračunana iz kataloga
   pmin = computed(() => {
     const arr = this.products().map(p => p.price);
     return arr.length ? Math.min(...arr) : 0;
@@ -140,21 +134,17 @@ export class ProductsPageComponent {
     return arr.length ? Math.max(...arr) : 0;
   });
 
-  // formular za price range
   form = this.fb.nonNullable.group({
     min: [0],
     max: [0],
   });
 
   constructor() {
-    // nastavi začetni range na celoten razpon cen
     this.form.patchValue({ min: this.pmin(), max: this.pmax() }, { emitEvent: false });
   }
 
-  // lokalni filter: najprej uporabi servisov filtered() (query + sort),
-  // nato dodatno filtriraj po cenovnem rangu
   filtered = computed<Product[]>(() => {
-    const base = this.svc.filtered(); // že upošteva query + sort
+    const base = this.svc.filtered();
     const min = Number(this.form.value.min ?? this.pmin());
     const max = Number(this.form.value.max ?? this.pmax());
     return base.filter(p => p.price >= min && p.price <= max);
@@ -171,5 +161,9 @@ export class ProductsPageComponent {
 
   setCategory(v:string) {
     this.svc.category.set((v as Category) ||'all')
+  }
+
+  onImgError(event: Event) {
+    (event.target as HTMLImageElement).src = 'assets/no-image.png';
   }
 }

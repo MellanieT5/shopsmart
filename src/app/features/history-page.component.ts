@@ -1,8 +1,9 @@
 // src/app/features/history-page.component.ts
-import { Component, signal } from '@angular/core';
+import { Component, signal, inject } from '@angular/core';
 import { NgFor, NgIf, CurrencyPipe, DatePipe, SlicePipe } from '@angular/common';
 import { HistoryService, OrderHistoryItem } from '../core/history.service';
 import {Router} from '@angular/router'; 
+import { ProductService } from '../core/product.service';
 
 @Component({
   standalone: true,
@@ -21,8 +22,8 @@ import {Router} from '@angular/router';
 
         <div class="history-items-preview">
           <img *ngFor="let it of o.items | slice:0:4"
-               [src]="it.imageData || 'assets/no-image.png'"
-               class="preview-img" [alt]="it.name" />
+               [src]="ps.resolveImage(it.imageData || it.imageData)"
+               class="preview-img" [alt]="it.name" (error)="onImgError($event)" />
           <span class="more" *ngIf="o.items.length > 4">+{{ o.items.length - 4 }} more</span>
         </div>
 
@@ -36,7 +37,6 @@ import {Router} from '@angular/router';
     <ng-template #empty><p>No orders yet.</p></ng-template>
   </div>
 
-  <!-- Simple details drawer -->
   <div *ngIf="sel()" class="drawer">
     <div class="drawer-card">
       <div class="drawer-top">
@@ -49,7 +49,7 @@ import {Router} from '@angular/router';
 
       <div class="items">
         <div class="row" *ngFor="let it of sel()!.items">
-          <img [src]="it.imageData || 'assets/no-image.png'" class="preview-img" [alt]="it.name" />
+          <img [src]="ps.resolveImage(it.imageData || it.imageData)" class="preview-img" [alt]="it.name" (error)="onImgError($event)" />
           <div class="info">
             <div class="name">{{ it.name }}</div>
             <div class="muted">{{ it.price | currency:'EUR' }} × {{ it.qty }}</div>
@@ -73,12 +73,16 @@ import {Router} from '@angular/router';
 export class HistoryPageComponent {
   constructor(public svc: HistoryService, private router:Router) {}
   sel = signal<OrderHistoryItem | null>(null);
+  ps = inject(ProductService);
   open(o: OrderHistoryItem) { this.sel.set(o); }
   close() { this.sel.set(null); }
   remove(id:number){ this.svc.remove(id); if (this.sel()?.id === id) this.close(); }
 
-
   goBack(){
     this.router.navigate(['/products']);
+  }
+
+  onImgError(event: Event) {
+    (event.target as HTMLImageElement).src = 'assets/no-image.png';
   }
 }

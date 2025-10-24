@@ -1,3 +1,8 @@
+const path = require('path');
+const fs=require('fs');
+const multer=require('multer');
+
+
 // ---- helpers ---------------------------------------------------------------
 function toNumber(v) {
   if (v == null) return null;
@@ -15,6 +20,7 @@ require('dotenv').config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use('uploads', express.static(path.join(__dirname, 'uploads')));
 
 const connStr = process.env.DB2_CONNSTR;
 
@@ -22,6 +28,29 @@ const connStr = process.env.DB2_CONNSTR;
 app.get('/', (_req, res) => {
   res.send('API is running. Try /api/products');
 });
+// --- upload (multer) ---
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, 'uploads');
+    fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const name = Date.now() + '-' + Math.round(Math.random() * 1e9) + ext;
+    cb(null, name);
+  }
+});
+const upload = multer({ storage });
+
+// POST /api/upload (field name = "image")
+app.post('/api/upload', upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'no file' });
+  // URL, ki ga bo front-end dal v <img src="">
+  const url = `/uploads/${req.file.filename}`;
+  res.json({ url });
+});
+
 
 // ---- GET all ---------------------------------------------------------------
 app.get('/api/products', async (_req, res) => {
@@ -72,9 +101,7 @@ app.post('/api/products', async (req, res) => {
     `;
     const insertParams = [name, category || null, numPrice, description || null, imageUrl || null, numStock, numActive];
 
-    const insertStmt = await conn.prepareAsync(insertSql);
-    await insertStmt.executeAsync(insertParams);
-    insertStmt.closeSync();
+    await conn.query(insertSql, insertParams);   // <— to ostane
 
     const [row] = await conn.query(`
       SELECT ID AS id, NAME AS name, CATEGORY AS category, PRICE AS price, 
@@ -90,6 +117,7 @@ app.post('/api/products', async (req, res) => {
     res.status(500).json({ error: e.message });
   } finally { if (conn) conn.closeSync(); }
 });
+
 
 
 // ---- UPDATE ---------------------------------------------------------------

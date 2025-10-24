@@ -3,6 +3,10 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NgIf, NgFor, CurrencyPipe } from '@angular/common';
 import { CartService } from '../core/cart.service';
 import {RouterLink} from '@angular/router'
+import { ProductService } from '../core/product.service';
+
+
+
 
 @Component({
   selector: 'app-cart-page',
@@ -21,10 +25,16 @@ import {RouterLink} from '@angular/router'
     <div class="cart-list">
       <div *ngFor="let line of cart.lines(); trackBy: trackById" class="cart-item">
         <!-- image -->
-        <img class="cart-img"
-             [src]="line.product.imageData || 'assets/no-image.png'"
-             [alt]="line.product.name" />
+     
+      <img class="cart-img"
+     [src]="svc.resolveImage(line.product.imageUrl || line.product.imageData)"
+     [alt]="line.product.name || 'product'"
+     (error)="onImgError($event)" />
 
+
+
+
+    
         <!-- name + unit price -->
         <div class="cart-info">
           <div class="cart-name">{{ line.product.name }}</div>
@@ -74,6 +84,12 @@ import {RouterLink} from '@angular/router'
 })
 export class CartPageComponent {
   cart = inject(CartService);//vbrizgnemo CartService in ga izpostavimo templatu
+ svc = inject(ProductService);
+
+ onImgError(event: Event) {
+    (event.target as HTMLImageElement).src = 'assets/no-image.png';
+  }
+
 
   trackById = (_: number, line: { product: { id: number } }) => line.product.id; //funkcija trackBy: Angular sledi elementom po product.id, manj nepotrebnih renderjev.
 }
